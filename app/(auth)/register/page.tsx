@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { RegisterFormData } from '@/types/auth'
+import { register } from '@/lib/auth'
 
 export default function RegisterPage() {
   const [form, setForm] = useState<RegisterFormData>({ name: '', email: '', password: '' })
