@@ -79,7 +79,7 @@ export const middleware: NextMiddleware = (request: NextRequest) => {
     }
   }
 
-  // 4. Redirect logged-in users away from auth pages
+  // 4. Redirect logged-in projects away from auth pages
   if ((pathname === '/auth/login' || pathname === '/auth/register') && isAuthenticated(request)) {
     return NextResponse.redirect(new URL('/dashboard', origin))
   }

@@ -1,5 +1,7 @@
 import { Poppins } from 'next/font/google'
 import './globals.css'
+import { ReactQueryProvider } from '@/components/ReactQueryProvider'
+import React from 'react'
 
 const poppins = Poppins({
   variable: '--font-poppins',
@@ -17,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={`${poppins.variable} font-[family-name:var(--font-poppins)] antialiased`}>
-        {children}
+        <ReactQueryProvider>{children}</ReactQueryProvider>
       </body>
     </html>
   )

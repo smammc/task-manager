@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     // TODO: Implement admin user management
     // - Authenticate request
     // - Check admin permissions
-    // - Fetch all users with admin details
+    // - Fetch all projects with admin details
     // - Apply filters and pagination
 
     return NextResponse.json({

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Invalid credentials' }, { status: 401 })
     }
 
-    const token = generateJWT({ id: user.id, name: user.name })
+    const token = generateJWT({ id: user.id, name: user.name, email: user.email })
 
     const response = NextResponse.json({
       success: true,

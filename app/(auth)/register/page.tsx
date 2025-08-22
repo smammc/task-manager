@@ -31,12 +31,23 @@ export default function RegisterPage() {
     }
     try {
       setLoading(true)
-      await register(form)
+      await register(form.name, form.email, form.password)
       setSuccess('Account created successfully')
       setForm({ name: '', email: '', password: '' })
       setTimeout(() => router.push('/login'), 1500)
     } catch (err) {
-      setError(err.message || 'Failed to create account. Please try again later.')
+      if (err instanceof Error) {
+        setError(err.message)
+      } else if (
+        typeof err === 'object' &&
+        err !== null &&
+        'message' in err &&
+        typeof (err as Record<string, unknown>).message === 'string'
+      ) {
+        setError(String((err as Record<string, unknown>).message))
+      } else {
+        setError('Failed to create account. Please try again later.')
+      }
     } finally {
       setLoading(false)
     }

@@ -1,9 +1,11 @@
 import { User } from '@/types/user'
 
 export async function getCurrentUser(): Promise<User | null> {
-  // TODO: Implement actual user fetching logic
-  // This could be from cookies, JWT, session, etc.
-  return null
+  const response = await fetch('/api/auth/me', { credentials: 'include' })
+  if (!response.ok) return null
+  const result = await response.json()
+  if (!result.success) return null
+  return result.data as User
 }
 
 export async function login(email: string, password: string): Promise<User> {
@@ -11,27 +13,24 @@ export async function login(email: string, password: string): Promise<User> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
-    credentials: 'include', // Ensure cookies are sent/received
+    credentials: 'include',
   })
 
+  const result = await response.json()
+
   if (!response.ok) {
-    let message = 'Failed to login'
-    try {
-      const data = await response.json()
-      message = data.message || message
-    } catch {}
+    const message = result?.message || 'Failed to login'
     throw new Error(message)
   }
 
-  const { data } = await response.json()
-  return data.user
+  return result.data.user
 }
 
-export async function register(email: string, password: string): Promise<User> {
+export async function register(name: string, email: string, password: string): Promise<User> {
   const response = await fetch('/api/auth/register', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ name, email, password }),
   })
   if (!response.ok) {
     const data = await response.json()
@@ -41,6 +40,17 @@ export async function register(email: string, password: string): Promise<User> {
 }
 
 export async function logout(): Promise<void> {
-  // TODO: Implement actual sign out logic
-  console.log('Logging out')
+  const response = await fetch('/api/auth/logout', {
+    method: 'POST',
+    credentials: 'include',
+  })
+  if (!response.ok) {
+    let message = 'Failed to logout'
+    try {
+      const data = await response.json()
+      message = data.message || message
+    } catch (error) {
+      throw new Error(message)
+    }
+  }
 }

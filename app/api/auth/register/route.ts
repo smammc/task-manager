@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { databaseConfig } from '@/config/database'
+import { userExists, createUser, getUserCount } from '@/lib/server/auth'
 import bcrypt from 'bcrypt'
 
 export async function POST(request: NextRequest) {
@@ -14,8 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     // - Check if user already exists
-    const userCheck = await databaseConfig.query('SELECT id FROM users WHERE email = $1', [email])
-    if ((userCheck.rowCount ?? 0) > 0) {
+    if (await userExists(email)) {
       console.log(`${email} already exists `)
       return NextResponse.json({ message: 'Email already registered' }, { status: 409 })
     }
@@ -23,11 +22,12 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Insert new user
-    await databaseConfig.query(
-      'INSERT INTO users (name, email, password_hash) VALUES ($1, $2, $3)',
-      [name, email, hashedPassword],
-    )
+    // Count projects to determine role
+    const userCount = await getUserCount()
+    const role = userCount === 0 ? 'admin' : 'user'
+
+    // Insert new user with role
+    await createUser({ name, email, passwordHash: hashedPassword, role })
 
     return NextResponse.json({ message: 'User registered successfully' }, { status: 201 })
   } catch (error) {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { User } from '@/types/user'
-import { getCurrentUser, signIn, signOut } from '@/lib/auth'
+import { getCurrentUser, login, logout } from '@/lib/auth'
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null)
@@ -23,12 +23,16 @@ export function useAuth() {
     loadUser()
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const handleLogin = async (email: string, password: string) => {
     setLoading(true)
     try {
-      const user = await signIn(email, password)
-      setUser(user)
-      return { success: true }
+      const user = await login(email, password)
+      if (user) {
+        setUser(user)
+        return { success: true }
+      } else {
+        return { success: false, error: 'Login failed' }
+      }
     } catch (error) {
       return {
         success: false,
@@ -39,10 +43,10 @@ export function useAuth() {
     }
   }
 
-  const logout = async () => {
+  const handleLogout = async () => {
     setLoading(true)
     try {
-      await signOut()
+      await logout()
       setUser(null)
     } catch (error) {
       console.error('Logout failed:', error)
@@ -54,8 +58,8 @@ export function useAuth() {
   return {
     user,
     loading,
-    login,
-    logout,
+    login: handleLogin,
+    logout: handleLogout,
     isAuthenticated: !!user,
     isAdmin: user?.role === 'admin',
   }
