@@ -6,6 +6,7 @@ import { StatusBadge } from './StatusBadge'
 import { MetaInfo } from './MetaInfo'
 import { formatDate } from '@/lib/utils'
 import { ProjectTasks } from './ProjectTasks'
+import Link from 'next/link'
 
 interface ProjectCardProps {
   project: Project & {
@@ -23,7 +24,12 @@ export function ProjectCard({ project, currentUser, onEdit, onDelete }: ProjectC
     <Card className="relative p-5 shadow-sm transition-shadow hover:shadow-md">
       {/* Header */}
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-lg font-semibold">{project.name}</h3>
+        <Link
+          href={`/dashboard/projects/${project.id}`}
+          className="text-lg font-semibold hover:underline focus:underline"
+        >
+          {project.name}
+        </Link>
         <StatusBadge status={project.status} />
       </div>
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { databaseConfig } from '@/config/database'
 import { getUserFromRequest } from '@/lib/server/auth'
+import { getMainTasksWithProgress } from '@/lib/server/tasks'
 
 // POST /api/tasks
 export async function POST(request: NextRequest) {
@@ -16,6 +17,8 @@ export async function POST(request: NextRequest) {
       description = '',
       parentTaskId = null,
       categoryId = null,
+      deadline = null,
+      endDate = null,
     } = await request.json()
     if (!name || !projectId) {
       return NextResponse.json(
@@ -32,10 +35,10 @@ export async function POST(request: NextRequest) {
     }
     // Insert new task
     const insertResult = await databaseConfig.query(
-      `INSERT INTO tasks (id, project_id, name, status, description, parent_task_id, category_id)
-       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6)
-       RETURNING id, project_id, name, status, description, parent_task_id, category_id, created_at, updated_at`,
-      [projectId, name, status, description, parentTaskId, categoryId],
+      `INSERT INTO tasks (id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date)
+       VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at`,
+      [projectId, name, status, description, parentTaskId, categoryId, deadline, endDate],
     )
     const task = insertResult.rows[0]
     return NextResponse.json({ success: true, task })
@@ -53,13 +56,17 @@ export async function GET(request: NextRequest) {
     if (!projectId) {
       return NextResponse.json({ success: false, error: 'Missing projectId' }, { status: 400 })
     }
-    const query = mainOnly
-      ? `SELECT id, project_id, name, status, description, parent_task_id, category_id, created_at, updated_at FROM tasks WHERE project_id = $1 AND parent_task_id IS NULL ORDER BY created_at ASC`
-      : `SELECT id, project_id, name, status, description, parent_task_id, category_id, created_at, updated_at FROM tasks WHERE project_id = $1 ORDER BY created_at ASC`
+    if (mainOnly) {
+      const tasks = await getMainTasksWithProgress(projectId)
+      return NextResponse.json({ success: true, tasks })
+    }
+    const query = `SELECT id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at FROM tasks WHERE project_id = $1 ORDER BY created_at ASC`
     const result = await databaseConfig.query(query, [projectId])
     return NextResponse.json({ success: true, tasks: result.rows })
   } catch (error) {
-    return NextResponse.json({ success: false, error: 'Failed to fetch tasks' }, { status: 500 })
+    // Enhanced error logging for debugging
+    console.error('Error in GET /api/tasks:', error)
+    return NextResponse.json({ success: false, error: String(error) }, { status: 500 })
   }
 }
 
@@ -70,7 +77,8 @@ export async function PATCH(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
-    const { id, name, status, description, parentTaskId, categoryId } = await request.json()
+    const { id, name, status, description, parentTaskId, categoryId, deadline, endDate } =
+      await request.json()
     if (!id) {
       return NextResponse.json({ success: false, error: 'Missing task id' }, { status: 400 })
     }
@@ -98,11 +106,19 @@ export async function PATCH(request: NextRequest) {
       fields.push(`category_id = $${idx++}`)
       values.push(categoryId)
     }
+    if (deadline !== undefined) {
+      fields.push(`deadline = $${idx++}`)
+      values.push(deadline)
+    }
+    if (endDate !== undefined) {
+      fields.push(`end_date = $${idx++}`)
+      values.push(endDate)
+    }
     if (!fields.length) {
       return NextResponse.json({ success: false, error: 'No fields to update' }, { status: 400 })
     }
     values.push(id)
-    const updateQuery = `UPDATE tasks SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${idx} RETURNING id, project_id, name, status, description, parent_task_id, category_id, created_at, updated_at`
+    const updateQuery = `UPDATE tasks SET ${fields.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = $${idx} RETURNING id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at`
     const result = await databaseConfig.query(updateQuery, values)
     if (!result.rowCount) {
       return NextResponse.json({ success: false, error: 'Task not found' }, { status: 404 })

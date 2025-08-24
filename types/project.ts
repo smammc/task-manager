@@ -25,4 +25,8 @@ export interface Task {
   categoryId?: string | null
   createdAt: string
   updatedAt: string
+  totalCount?: number // total subtasks
+  completedCount?: number // completed subtasks
+  deadline?: string | null
+  endDate?: string | null
 }

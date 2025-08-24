@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Edit2, Trash2, ListTree } from 'lucide-react'
 import { Task } from '@/types/project'
+import { SegmentedProgress } from './SegmentedProgress'
 
 interface ProjectTasksProps {
   projectId: string
@@ -145,69 +146,40 @@ export function ProjectTasks({ projectId, isOwner }: ProjectTasksProps) {
               {tasks.map((task) => (
                 <li
                   key={task.id}
-                  className="flex items-center justify-between gap-2 rounded bg-gray-50 p-2"
+                  className="flex flex-col gap-1 rounded border border-gray-100 bg-gray-50 p-2"
                 >
-                  {editingTaskId === task.id ? (
-                    <>
-                      <input
-                        className="flex-1 rounded border px-2 py-1 text-xs"
-                        value={editTaskName}
-                        onChange={(e) => setEditTaskName(e.target.value)}
-                        disabled={editLoading}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleEditTask(task.id)
-                        }}
-                        autoFocus
-                      />
-                      <button
-                        className="rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
-                        onClick={() => handleEditTask(task.id)}
-                        disabled={editLoading || !editTaskName.trim()}
-                      >
-                        {editLoading ? 'Saving...' : 'Save'}
-                      </button>
-                      <button
-                        className="rounded bg-gray-200 px-2 py-1 text-xs text-gray-700 hover:bg-gray-300"
-                        onClick={() => {
-                          setEditingTaskId(null)
-                          setEditTaskName('')
-                        }}
-                        disabled={editLoading}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <span className="flex-1 font-medium">{task.name}</span>
-                      {isOwner && (
-                        <>
-                          <button
-                            className="rounded p-1 text-blue-600 hover:bg-blue-50"
-                            onClick={() => {
-                              setEditingTaskId(task.id)
-                              setEditTaskName(task.name)
-                            }}
-                            title="Edit task"
-                            disabled={editLoading || deleteLoadingId === task.id}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            className="rounded p-1 text-red-600 hover:bg-red-50"
-                            onClick={() => handleDeleteTask(task.id)}
-                            title="Delete task"
-                            disabled={deleteLoadingId === task.id || editLoading}
-                          >
-                            {deleteLoadingId === task.id ? (
-                              <span className="text-xs">Deleting...</span>
-                            ) : (
-                              <Trash2 size={16} />
-                            )}
-                          </button>
-                        </>
-                      )}
-                    </>
+                  <div className="flex items-center justify-between">
+                    <span className="flex-1 text-sm font-medium">{task.name}</span>
+                    {isOwner && (
+                      <div className="flex gap-1">
+                        {/* Edit/Delete icon buttons */}
+                        <button
+                          className="rounded p-1 text-blue-600 hover:bg-blue-50"
+                          onClick={() => {
+                            setEditingTaskId(task.id)
+                            setEditTaskName(task.name)
+                          }}
+                          title="Edit task"
+                          disabled={editLoading && editingTaskId === task.id}
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button
+                          className="rounded p-1 text-red-600 hover:bg-red-50"
+                          onClick={() => handleDeleteTask(task.id)}
+                          title="Delete task"
+                          disabled={deleteLoadingId === task.id}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {(task.totalCount ?? 0) > 0 && (
+                    <SegmentedProgress
+                      completed={task.completedCount || 0}
+                      total={task.totalCount || 0}
+                    />
                   )}
                 </li>
               ))}
