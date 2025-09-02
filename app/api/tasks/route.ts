@@ -10,6 +10,8 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
+    const body = await request.json()
+    console.log('POST /api/tasks request body:', body)
     const {
       name,
       projectId,
@@ -19,7 +21,7 @@ export async function POST(request: NextRequest) {
       categoryId = null,
       deadline = null,
       endDate = null,
-    } = await request.json()
+    } = body
     if (!name || !projectId) {
       return NextResponse.json(
         { success: false, error: 'Missing name or projectId' },
@@ -43,6 +45,7 @@ export async function POST(request: NextRequest) {
     const task = insertResult.rows[0]
     return NextResponse.json({ success: true, task })
   } catch (error) {
+    console.error('POST /api/tasks error:', error)
     return NextResponse.json({ success: false, error: 'Failed to create task' }, { status: 500 })
   }
 }

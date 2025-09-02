@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/Button'
 import { Progress } from '@/components/ui/Progress'
 import { Task } from '@/types/project' // adjust according to your types
 import { cn } from '@/lib/utils'
+import { CreateTaskDrawer } from './CreateTaskDrawer'
+import { Trash2, Edit2 } from 'lucide-react'
 
 // Utility to show relative deadline context
 function getDeadlineContext(deadline?: string) {
@@ -23,6 +25,7 @@ interface TaskCardProps {
   onEdit?: (task: Task) => void
   onDelete?: (task: Task) => void
   onSubtasksChange?: () => void
+  onTitleClick?: () => void
 }
 
 export function TaskCard({
@@ -32,48 +35,33 @@ export function TaskCard({
   onEdit,
   onDelete,
   onSubtasksChange,
+  onTitleClick,
 }: TaskCardProps) {
-  const [showSubtasks, setShowSubtasks] = useState(false)
-  const [showAddForm, setShowAddForm] = useState(false)
-  const [newSubtaskName, setNewSubtaskName] = useState('')
-  const [newSubtaskDeadline, setNewSubtaskDeadline] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [showSubtaskDrawer, setShowSubtaskDrawer] = useState(false)
+  const [editSubtask, setEditSubtask] = useState<Task | null>(null)
 
   const totalSubtasks = subtasks.length
   const completedSubtasks = subtasks.filter((st) => st.status === 'Completed').length
   const progress = totalSubtasks > 0 ? Math.round((completedSubtasks / totalSubtasks) * 100) : 0
 
-  // Add subtask
-  async function handleAddSubtask() {
-    if (!newSubtaskName.trim()) return
-    setLoading(true)
-    setError(null)
+  // Add delete logic for main and sub tasks
+  const handleDelete = async (taskId: string) => {
+    if (!window.confirm('Are you sure you want to delete this task?')) return
     try {
       const res = await fetch('/api/tasks', {
-        method: 'POST',
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newSubtaskName,
-          projectId: task.projectId,
-          parentTaskId: task.id,
-          deadline: newSubtaskDeadline || null,
-        }),
+        body: JSON.stringify({ id: taskId }),
       })
-      const data = await res.json()
-      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to add subtask')
-      setNewSubtaskName('')
-      setNewSubtaskDeadline('')
-      setShowAddForm(false)
+      const result = await res.json()
+      if (!res.ok || !result.success) throw new Error(result.error || 'Failed to delete task')
       onSubtasksChange?.()
-    } catch (e: unknown) {
-      if (e instanceof Error) {
-        setError(e.message)
+    } catch (err) {
+      if (err instanceof Error) {
+        alert(err.message || 'Failed to delete task')
       } else {
-        setError('An unknown error occurred')
+        alert('Failed to delete task')
       }
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -82,7 +70,15 @@ export function TaskCard({
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">{task.name}</h3>
+          <h3
+            className="cursor-pointer text-lg font-semibold text-gray-900 hover:underline"
+            onClick={onTitleClick}
+            title="View details"
+          >
+            {task.name}
+          </h3>
+          {/* Description */}
+          {task.description && <div className="mt-1 text-sm text-gray-700">{task.description}</div>}
           <div className="mt-1 flex flex-wrap gap-2 text-xs text-gray-600">
             {task.createdAt && (
               <span className="rounded bg-gray-100 px-2 py-0.5">
@@ -109,28 +105,53 @@ export function TaskCard({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span
+          {/* Status Dropdown */}
+          <select
             className={cn(
-              'rounded px-2 py-1 text-xs font-medium',
+              'rounded border px-2 py-1 text-xs font-medium',
               task.status === 'Completed'
-                ? 'bg-green-100 text-green-800'
+                ? 'border-green-200 bg-green-100 text-green-800'
                 : task.status === 'In Progress'
-                  ? 'bg-yellow-100 text-yellow-800'
-                  : 'bg-gray-100 text-gray-800',
+                  ? 'border-yellow-200 bg-yellow-100 text-yellow-800'
+                  : 'border-gray-200 bg-gray-100 text-gray-800',
             )}
+            value={task.status}
+            onChange={async (e) => {
+              const newStatus = e.target.value
+              // Optimistically update UI or call API
+              try {
+                await fetch(`/api/tasks`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ id: task.id, status: newStatus }),
+                })
+                onSubtasksChange?.()
+              } catch {
+                // Optionally handle error
+              }
+            }}
           >
-            {task.status}
-          </span>
-          {onEdit && (
-            <Button size="sm" variant="outline" onClick={() => onEdit(task)}>
-              Edit
-            </Button>
-          )}
-          {onDelete && (
-            <Button size="sm" variant="destructive" onClick={() => onDelete(task)}>
-              Delete
-            </Button>
-          )}
+            <option value="Not Started">Not Started</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+          </select>
+          <button
+            className="rounded p-1 text-blue-600 hover:bg-blue-50"
+            onClick={(e) => {
+              e.stopPropagation()
+              if (onEdit) onEdit(task)
+            }}
+            title="Edit main task"
+          >
+            <Edit2 size={16} />
+          </button>
+          <button
+            className="rounded p-1 text-red-600 hover:bg-red-50"
+            onClick={() => handleDelete(task.id)}
+            title="Delete main task"
+          >
+            <Trash2 size={16} />
+          </button>
         </div>
       </div>
 
@@ -145,25 +166,17 @@ export function TaskCard({
       )}
       {hours > 0 && <p className="mt-1 text-xs text-blue-600">{hours}h logged</p>}
 
-      {/* Subtask Toggle */}
-      {totalSubtasks > 0 && (
-        <Button
-          variant="secondary"
-          size="sm"
-          className="mt-4 text-xs"
-          onClick={() => setShowSubtasks((prev) => !prev)}
-        >
-          {showSubtasks ? 'Hide Subtasks' : `Show Subtasks (${totalSubtasks})`}
-        </Button>
-      )}
-
       {/* Subtasks */}
-      {showSubtasks && (
+      {totalSubtasks > 0 && (
         <div className="mt-3 space-y-2">
           {subtasks.map((st) => (
             <div
               key={st.id}
-              className="flex items-center justify-between rounded border p-2 hover:bg-gray-50"
+              className="flex cursor-pointer items-center justify-between rounded border p-2 hover:bg-gray-50"
+              onClick={() => {
+                setEditSubtask(st)
+                setShowSubtaskDrawer(true)
+              }}
             >
               <div>
                 <p className="text-sm font-medium">{st.name}</p>
@@ -171,77 +184,60 @@ export function TaskCard({
                   {st.deadline ? getDeadlineContext(st.deadline) : 'No deadline'}
                 </p>
               </div>
-              <span
-                className={cn(
-                  'rounded px-2 py-0.5 text-xs',
-                  st.status === 'Completed'
-                    ? 'bg-green-100 text-green-700'
-                    : st.status === 'In Progress'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-gray-100 text-gray-700',
-                )}
-              >
-                {st.status}
-              </span>
+              <div className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    'rounded px-2 py-0.5 text-xs',
+                    st.status === 'Completed'
+                      ? 'bg-green-100 text-green-700'
+                      : st.status === 'In Progress'
+                        ? 'bg-yellow-100 text-yellow-700'
+                        : 'bg-gray-100 text-gray-700',
+                  )}
+                >
+                  {st.status}
+                </span>
+                <button
+                  className="rounded p-1 text-red-600 hover:bg-red-50"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleDelete(st.id)
+                  }}
+                  title="Delete subtask"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Add Subtask */}
+      {/* Add Subtask Drawer Button */}
       <div className="mt-4">
-        {showAddForm ? (
-          <div className="flex flex-col gap-2 rounded border bg-gray-50 p-3">
-            <input
-              className="flex-1 rounded border px-2 py-1 text-sm"
-              placeholder="New subtask name"
-              value={newSubtaskName}
-              onChange={(e) => setNewSubtaskName(e.target.value)}
-              disabled={loading}
-            />
-            <div className="flex flex-col gap-1 text-xs">
-              <label className="font-medium text-gray-600">Deadline</label>
-              <input
-                type="date"
-                className="rounded border px-2 py-1 text-xs"
-                value={newSubtaskDeadline}
-                onChange={(e) => setNewSubtaskDeadline(e.target.value)}
-                disabled={loading}
-              />
-              <span className="text-gray-400">{getDeadlineContext(newSubtaskDeadline)}</span>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onClick={handleAddSubtask}
-                disabled={loading || !newSubtaskName.trim()}
-              >
-                Save
-              </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  setShowAddForm(false)
-                  setNewSubtaskName('')
-                  setNewSubtaskDeadline('')
-                }}
-              >
-                Cancel
-              </Button>
-            </div>
-            {error && <div className="text-xs text-red-500">{error}</div>}
-          </div>
-        ) : (
-          <Button
-            variant="secondary"
-            size="sm"
-            className="text-xs"
-            onClick={() => setShowAddForm(true)}
-          >
-            + Add Subtask
-          </Button>
-        )}
+        <Button
+          variant="secondary"
+          size="sm"
+          className="text-xs"
+          onClick={() => setShowSubtaskDrawer(true)}
+        >
+          + Add Subtask
+        </Button>
+        <CreateTaskDrawer
+          open={showSubtaskDrawer}
+          onClose={() => {
+            setShowSubtaskDrawer(false)
+            setEditSubtask(null)
+          }}
+          onSuccess={() => {
+            setShowSubtaskDrawer(false)
+            setEditSubtask(null)
+            onSubtasksChange?.()
+          }}
+          task={editSubtask}
+          projectId={task.projectId}
+          parentTaskId={editSubtask?.parentTaskId ?? task.id}
+        />
       </div>
     </Card>
   )

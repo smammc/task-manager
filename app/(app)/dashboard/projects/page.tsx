@@ -5,18 +5,17 @@ import { Button } from '@/components/ui/Button'
 import { ProjectCard } from '@/components/projects/ProjectCard'
 import { Card } from '@/components/ui/Card'
 import { CreateProjectDrawer } from '@/components/projects/CreateProjectDrawer'
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { Project } from '@/types/project'
 
 export default function ProjectsPage() {
   const { data: projects, isLoading, isError, error, refetch } = useProjects()
-  const [drawerOpen, setDrawerOpen] = React.useState(false)
-  const [editProject, setEditProject] = React.useState(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editProject, setEditProject] = useState<Project | null>(null as Project | null)
   const { user: currentUser } = useAuth()
 
   const handleEdit = (project: Project) => {
-    // @ts-ignore
     setEditProject(project)
     setDrawerOpen(true)
   }
@@ -27,7 +26,7 @@ export default function ProjectsPage() {
     )
       return
     await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
-    refetch()
+    await refetch()
   }
 
   return (

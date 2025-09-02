@@ -1,22 +1,41 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Task } from '@/types/project'
 import { TaskCard } from './TaskCard'
 
 interface KanbanBoardProps {
   tasks: Task[]
+  projectId?: string
+  onTasksChange?: () => void // Add callback prop
+  taskId?: string
 }
 
 const columns = [
-  { key: 'Not Started', title: 'To Do' },
+  { key: 'Not Started', title: 'Not Started' },
   { key: 'In Progress', title: 'In Progress' },
-  { key: 'Completed', title: 'Done' },
+  { key: 'Completed', title: 'Completed' },
 ]
 
-export function KanbanBoard({ tasks }: KanbanBoardProps) {
+export function KanbanBoard({ tasks, projectId, onTasksChange, taskId }: KanbanBoardProps) {
+  const [boardTasks, setBoardTasks] = useState<Task[]>(tasks)
+
+  // Refetch tasks from API (for local Kanban state only)
+  const refreshTasks = async () => {
+    if (!projectId) return
+    const res = await fetch(`/api/tasks?projectId=${projectId}`)
+    const data = await res.json()
+    if (data.success) setBoardTasks(data.tasks)
+    // Notify parent to refetch
+    onTasksChange?.()
+  }
+
+  useEffect(() => {
+    setBoardTasks(tasks)
+  }, [tasks])
+
   return (
     <div className="grid grid-cols-3 gap-4">
       {columns.map((col) => {
-        const colTasks = tasks.filter((t) => t.status === col.key && !t.parentTaskId)
+        const colTasks = boardTasks.filter((t) => t.status === col.key && t.parentTaskId === taskId)
 
         return (
           <div key={col.key} className="flex flex-col rounded-md bg-gray-50 p-2">
@@ -26,7 +45,8 @@ export function KanbanBoard({ tasks }: KanbanBoardProps) {
                 <div key={task.id} className="mb-2">
                   <TaskCard
                     task={task}
-                    subtasks={tasks.filter((st) => st.parentTaskId === task.id)}
+                    subtasks={boardTasks.filter((st) => st.parentTaskId === task.id)}
+                    onSubtasksChange={refreshTasks}
                   />
                 </div>
               ))

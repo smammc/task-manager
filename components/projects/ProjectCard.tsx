@@ -1,4 +1,4 @@
-import { Pencil, Trash } from 'lucide-react'
+import { Pencil, Trash2 } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Calendar } from 'lucide-react'
 import { Project } from '@/types/project'
@@ -61,11 +61,11 @@ export function ProjectCard({ project, currentUser, onEdit, onDelete }: ProjectC
                 <Pencil size={18} />
               </button>
               <button
-                className="rounded p-2 text-red-600 transition hover:bg-red-50"
+                className="rounded p-1 text-red-600 hover:bg-red-50"
                 onClick={() => onDelete && onDelete(project)}
                 title="Delete project"
               >
-                <Trash size={18} />
+                <Trash2 size={16} />
               </button>
             </>
           )}

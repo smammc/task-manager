@@ -45,7 +45,7 @@ export function CreateProjectDrawer({
   useEffect(() => {
     if (open) {
       setMessage(null)
-      if (project) {
+      if (project && project.id) {
         reset({
           name: project.name || '',
           description: project.description || '',
@@ -56,7 +56,15 @@ export function CreateProjectDrawer({
           ownerId: project.ownerId || '',
         })
       } else {
-        reset()
+        reset({
+          name: '',
+          description: '',
+          status: 'planning',
+          startDate: today,
+          endDate: '',
+          teamId: '',
+          ownerId: '',
+        })
       }
       fetch('/api/teams')
         .then((res) => res.json())
@@ -97,6 +105,7 @@ export function CreateProjectDrawer({
       }
       result = await res.json()
       if (!res.ok) {
+        setMessage(result.error || 'Failed to save project')
         throw new Error(result.error || 'Failed to save project')
       }
       setMessage(project ? 'Project updated successfully!' : 'Project created successfully!')
@@ -127,7 +136,9 @@ export function CreateProjectDrawer({
         className={`ml-auto h-full w-full max-w-md bg-white shadow-xl transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between border-b p-4">
-          <h2 className="text-lg font-semibold">Create Project</h2>
+          <h2 className="mb-4 text-lg font-semibold">
+            {project && project.id ? `Edit ${project.name}` : 'Create New Project'}
+          </h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-700">
             ✕
           </button>
@@ -213,11 +224,15 @@ export function CreateProjectDrawer({
               <span className="text-xs text-red-500">{errors.ownerId.message}</span>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating...' : 'Create Project'}
+          <Button type="submit" disabled={isSubmitting}>
+            {project && project.id ? 'Save Changes' : 'Create Project'}
           </Button>
           {message && (
-            <div className="text-center text-sm font-medium text-blue-600">{message}</div>
+            <div
+              className={`text-center text-sm font-medium ${message.includes('success') ? 'text-green-600' : 'text-red-500'}`}
+            >
+              {message}
+            </div>
           )}
         </form>
       </div>

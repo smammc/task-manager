@@ -2,24 +2,23 @@ import { useState, useEffect } from 'react'
 import { Edit2, Trash2, ListTree } from 'lucide-react'
 import { Task } from '@/types/project'
 import { SegmentedProgress } from './SegmentedProgress'
+import { CreateTaskDrawer } from '@/components/tasks/CreateTaskDrawer'
 
 interface ProjectTasksProps {
   projectId: string
-  isOwner: boolean
 }
 
-export function ProjectTasks({ projectId, isOwner }: ProjectTasksProps) {
+export function ProjectTasks({ projectId }: ProjectTasksProps) {
   const [addingTask, setAddingTask] = useState(false)
   const [newTaskName, setNewTaskName] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [tasksLoading, setTasksLoading] = useState(false)
-  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
-  const [editTaskName, setEditTaskName] = useState('')
-  const [editLoading, setEditLoading] = useState(false)
   const [deleteLoadingId, setDeleteLoadingId] = useState<string | null>(null)
   const [showMainTasks, setShowMainTasks] = useState(false)
+  const [showEditTaskDrawer, setShowEditTaskDrawer] = useState(false)
+  const [editTask, setEditTask] = useState<Task | null>(null)
 
   useEffect(() => {
     setTasksLoading(true)
@@ -49,28 +48,6 @@ export function ProjectTasks({ projectId, isOwner }: ProjectTasksProps) {
       setError(e instanceof Error ? e.message : 'An error occurred')
     } finally {
       setLoading(false)
-    }
-  }
-
-  async function handleEditTask(taskId: string) {
-    if (!editTaskName.trim()) return
-    setEditLoading(true)
-    setError(null)
-    try {
-      const res = await fetch('/api/tasks', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: taskId, name: editTaskName }),
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) throw new Error(data.error || 'Failed to update task')
-      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, name: editTaskName } : t)))
-      setEditingTaskId(null)
-      setEditTaskName('')
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'An error occurred')
-    } finally {
-      setEditLoading(false)
     }
   }
 
@@ -149,31 +126,28 @@ export function ProjectTasks({ projectId, isOwner }: ProjectTasksProps) {
                   className="flex flex-col gap-1 rounded border border-gray-100 bg-gray-50 p-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="flex-1 text-sm font-medium">{task.name}</span>
-                    {isOwner && (
-                      <div className="flex gap-1">
-                        {/* Edit/Delete icon buttons */}
-                        <button
-                          className="rounded p-1 text-blue-600 hover:bg-blue-50"
-                          onClick={() => {
-                            setEditingTaskId(task.id)
-                            setEditTaskName(task.name)
-                          }}
-                          title="Edit task"
-                          disabled={editLoading && editingTaskId === task.id}
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          className="rounded p-1 text-red-600 hover:bg-red-50"
-                          onClick={() => handleDeleteTask(task.id)}
-                          title="Delete task"
-                          disabled={deleteLoadingId === task.id}
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    )}
+                    <span className="flex-1 font-medium text-gray-800">{task.name}</span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        className="rounded p-1 text-blue-600 hover:bg-blue-50"
+                        onClick={() => {
+                          setEditTask(task)
+                          setShowEditTaskDrawer(true)
+                        }}
+                        title="Edit task"
+                        aria-label="Edit task"
+                      >
+                        <Edit2 size={16} />
+                      </button>
+                      <button
+                        className="rounded p-1 text-red-600 hover:bg-red-50"
+                        onClick={() => handleDeleteTask(task.id)}
+                        title="Delete task"
+                        disabled={deleteLoadingId === task.id}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </div>
                   {(task.totalCount ?? 0) > 0 && (
                     <SegmentedProgress
@@ -187,6 +161,27 @@ export function ProjectTasks({ projectId, isOwner }: ProjectTasksProps) {
           ) : (
             <div className="text-xs text-gray-500">No main tasks</div>
           )}
+          <CreateTaskDrawer
+            open={showEditTaskDrawer}
+            onClose={() => {
+              setShowEditTaskDrawer(false)
+              setEditTask(null)
+            }}
+            onSuccess={() => {
+              setShowEditTaskDrawer(false)
+              setEditTask(null)
+              // Refetch tasks after edit
+              setTasksLoading(true)
+              fetch(`/api/tasks?projectId=${projectId}&mainOnly=1`)
+                .then((res) => res.json())
+                .then((data) => setTasks(data.tasks || []))
+                .catch(() => setTasks([]))
+                .finally(() => setTasksLoading(false))
+            }}
+            projectId={projectId}
+            parentTaskId={null}
+            task={editTask}
+          />
         </>
       )}
     </div>
