@@ -1,37 +1,21 @@
 // Main Task Details Page with Kanban Board
 'use client'
 
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { useParams } from 'next/navigation'
 import { Card } from '@/components/ui/Card'
 import { KanbanBoard } from '@/components/tasks/KanbanBoard'
-import { Task } from '@/types/project'
-import { mapApiTask } from '@/lib/tasks'
+import { useTasks } from '@/hooks/useTasks'
 
 export default function MainTaskDetailsPage() {
   const { id, taskId } = useParams()
-  const [allTasks, setAllTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!id || !taskId) return
-    setLoading(true)
-    fetch(`/api/tasks?projectId=${id}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setAllTasks((data.tasks || []).map(mapApiTask))
-      })
-      .finally(() => setLoading(false))
-  }, [id, taskId])
+  const { tasks, loading, refetch } = useTasks(id as string)
 
   const mainTask = useMemo(
-    () => allTasks.find((t) => t.id === taskId && !t.parentTaskId) || null,
-    [allTasks, taskId],
+    () => tasks.find((t) => t.id === taskId && !t.parentTaskId) || null,
+    [tasks, taskId],
   )
-  const subtasks = useMemo(
-    () => allTasks.filter((t) => t.parentTaskId === taskId),
-    [allTasks, taskId],
-  )
+  const subtasks = useMemo(() => tasks.filter((t) => t.parentTaskId === taskId), [tasks, taskId])
 
   if (loading) return <div className="text-sm text-gray-400">Loading task...</div>
   if (!mainTask) return <div className="text-sm text-red-500">Main task not found.</div>
@@ -45,7 +29,7 @@ export default function MainTaskDetailsPage() {
           tasks={subtasks}
           projectId={id as string}
           taskId={taskId as string}
-          onTasksChange={() => {}}
+          onTasksChange={refetch}
         />
       </Card>
     </div>
