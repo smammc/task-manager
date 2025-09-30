@@ -7,9 +7,14 @@ export async function POST(request: NextRequest) {
       message: 'Logout successful',
     })
 
-    // Clear auth cookies (set to empty and expired)
-    response.cookies.set('auth-token', '', { path: '/', httpOnly: true, expires: new Date(0) })
-    response.cookies.set('refresh-token', '', { path: '/', httpOnly: true, expires: new Date(0) })
+    // Clear the token cookie (this is the cookie name used in login)
+    response.cookies.set('token', '', {
+      path: '/',
+      httpOnly: true,
+      expires: new Date(0),
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    })
 
     return response
   } catch (error) {
