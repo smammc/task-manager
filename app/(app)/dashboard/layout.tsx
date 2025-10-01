@@ -76,9 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Collapsed: show compact clock under the left-aligned T */}
         <div
           className={`mt-2 flex transition-opacity duration-200 ${isCollapsed ? 'opacity-100' : 'pointer-events-none h-0 overflow-hidden opacity-0'}`}
-        >
-          <CollapsedClock size={22} />
-        </div>
+        ></div>
       </div>
 
       {/* Navigation */}

@@ -78,8 +78,8 @@ export default function TimerTestPage() {
           projectName: string
         }> = []
         projs.forEach((p) => {
-          const mts = (p as any).mainTasks || []
-          mts.forEach((t: any) =>
+          const mts: { id: string; name: string }[] = p.mainTasks || []
+          mts.forEach((t) =>
             allTasks.push({
               id: t.id,
               name: t.name,
@@ -119,8 +119,25 @@ export default function TimerTestPage() {
         showMessage(body.error || 'Failed to start timer', 'error')
       } else {
         showMessage('Timer started successfully!', 'success')
-        setActiveTimer(body.timeEntry)
+        const timeEntry = body.timeEntry
+        setActiveTimer(timeEntry)
         setTimerDuration(0)
+
+        // Add task info for better display
+        const selectedTask = tasks.find((t) => t.id === selectedTaskId)
+        if (selectedTask) {
+          timeEntry.task = {
+            name: selectedTask.name,
+            project_name: selectedTask.projectName,
+          }
+        }
+
+        // Dispatch event to sync with sidebar stopwatch
+        window.dispatchEvent(
+          new CustomEvent('timerUpdate', {
+            detail: { type: 'start', timeEntry },
+          }),
+        )
       }
     } catch (err) {
       console.error(err)
@@ -150,6 +167,13 @@ export default function TimerTestPage() {
         )
         setActiveTimer(body.timeEntry)
         setTimerDuration(body.timeEntry.duration_seconds || 0)
+
+        // Dispatch event to sync with sidebar stopwatch
+        window.dispatchEvent(
+          new CustomEvent('timerUpdate', {
+            detail: { type: 'stop', timeEntry: body.timeEntry },
+          }),
+        )
       }
     } catch (err) {
       console.error(err)
@@ -161,6 +185,23 @@ export default function TimerTestPage() {
 
   const selectedTask = tasks.find((t) => t.id === selectedTaskId)
   const isTimerActive = activeTimer && !activeTimer.end_time
+
+  useEffect(() => {
+    const handleTimerUpdate = (event: CustomEvent) => {
+      const { type, timeEntry } = event.detail
+      if (type === 'stop') {
+        setActiveTimer(timeEntry)
+        setTimerDuration(timeEntry?.duration_seconds || 0)
+      } else if (type === 'start') {
+        setActiveTimer(timeEntry)
+        setTimerDuration(0)
+      }
+    }
+    window.addEventListener('timerUpdate', handleTimerUpdate as EventListener)
+    return () => {
+      window.removeEventListener('timerUpdate', handleTimerUpdate as EventListener)
+    }
+  }, [])
 
   return (
     <div
@@ -288,7 +329,7 @@ export default function TimerTestPage() {
                   borderRadius: '50%',
                   background: 'currentColor',
                   marginRight: 8,
-                  animation: isTimerActive ? 'pulse 2s infinite' : 'none',
+                  animation: isTimerActive ? 'pulse 2s infinite' : undefined,
                 }}
               />
               {isTimerActive ? 'RUNNING' : 'STOPPED'}
