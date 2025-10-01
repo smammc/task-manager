@@ -3,14 +3,15 @@ import { databaseConfig } from '@/config/database'
 import { getUserFromRequest } from '@/lib/server/auth'
 
 // POST /api/tasks/[taskId]/timer/start
-export async function POST(request: NextRequest, context: { params: { taskId: string } }) {
+export async function POST(request: NextRequest, context: { params: Promise<{ taskId: string }> }) {
   try {
     const user = await getUserFromRequest(request)
     if (!user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { taskId } = context.params
+    // await lazy params per Next.js 15+ API dynamic route behavior
+    const { taskId } = await context.params
     if (!taskId) {
       return NextResponse.json({ success: false, error: 'Missing taskId' }, { status: 400 })
     }
