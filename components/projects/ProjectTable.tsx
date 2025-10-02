@@ -110,6 +110,11 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({ project }) => {
     refetch()
   }
 
+  const handleSubtaskCanceled = (mainTaskId: string) => {
+    // Hide the subtask form when canceled
+    setShowingSubtaskForm((prev) => ({ ...prev, [mainTaskId]: false }))
+  }
+
   const handleEditTask = async (taskId: string, newName: string) => {
     try {
       const response = await fetch('/api/tasks', {
@@ -387,6 +392,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({ project }) => {
                               projectId={project.id}
                               parentTaskId={mainTask.id}
                               onCreated={() => handleSubtaskCreated(mainTask.id)}
+                              onCancel={() => handleSubtaskCanceled(mainTask.id)}
                               variant="sub"
                             />
                           </div>
