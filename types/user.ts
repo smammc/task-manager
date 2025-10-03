@@ -1,20 +1,16 @@
-export interface User {
-  id: string
-  email: string
-  name: string
-  role: 'user' | 'admin'
-  password_hash: string
-  createdAt: Date
-  updatedAt: Date
-}
+import { z } from 'zod'
 
-export interface CreateUserData {
-  email: string
-  name: string
-  password: string
-}
+export const UserSchema = z.object({
+  id: z.string(),
+  email: z.string().email(),
+  name: z.string(),
+  role: z.enum(['user', 'admin']),
+})
 
-export interface LoginData {
-  email: string
-  password: string
-}
+export type User = z.infer<typeof UserSchema>
+
+export const UserWithPasswordSchema = UserSchema.extend({
+  password_hash: z.string(),
+})
+
+export type UserWithPassword = z.infer<typeof UserWithPasswordSchema>

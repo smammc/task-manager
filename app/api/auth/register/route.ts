@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { userExists, createUser, getUserCount } from '@/lib/server/auth'
+import { CreateUserSchema } from '@/types/api/user'
 import bcrypt from 'bcrypt'
+import { z } from 'zod'
 
 export async function POST(request: NextRequest) {
-  // TODO: Implement user registration logic
-  // - Send verification email (optional)
   try {
-    const { name, email, password } = await request.json()
+    const body = await request.json()
+    const result = CreateUserSchema.safeParse(body)
 
-    // - Validate input data X
-    if (!name || !email || !password) {
-      return NextResponse.json({ message: 'Missing fields' }, { status: 400 })
+    if (!result.success) {
+      return NextResponse.json(
+        { message: 'Invalid input', errors: z.flattenError(result.error) },
+        { status: 400 },
+      )
     }
+    const { name, email, password } = result.data
 
     // - Check if user already exists
     if (await userExists(email)) {
