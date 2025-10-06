@@ -1,32 +1,24 @@
-export interface Project {
-  id: string
-  teamId: string
-  teamName: string
-  ownerId: string
-  ownerName: string
-  name: string
-  description?: string
-  status: 'planning' | 'active' | 'on_hold' | 'completed' | 'cancelled' | 'archived'
-  startDate?: string
-  endDate?: string
-  mainTasks?: {
-    id: string
-    name: string
-  }[]
-}
+import { z } from 'zod'
 
-export interface Task {
-  id: string
-  projectId: string
-  name: string
-  status: 'Not Started' | 'In Progress' | 'Completed'
-  description?: string
-  parentTaskId?: string | null
-  categoryId?: string | null
-  createdAt: string
-  updatedAt: string
-  totalCount?: number // total subtasks
-  completedCount?: number // completed subtasks
-  deadline?: string | null
-  endDate?: string | null
-}
+export const ProjectSchema = z.object({
+  id: z.string(),
+  teamId: z.string(),
+  teamName: z.string(),
+  ownerId: z.string(),
+  ownerName: z.string(),
+  name: z.string(),
+  description: z.string().optional(),
+  status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled', 'archived']),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  mainTasks: z
+    .array(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+      }),
+    )
+    .optional(),
+})
+
+export type Project = z.infer<typeof ProjectSchema>

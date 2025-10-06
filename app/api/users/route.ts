@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { databaseConfig } from '@/config/database'
 
+// Usage: CreateProjectDrawer
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
@@ -37,35 +38,8 @@ export async function GET(request: NextRequest) {
         totalPages,
       },
     })
-  } catch (_error) {
+  } catch (error) {
     // Optionally log error for debugging
     return NextResponse.json({ success: false, error: 'Failed to fetch users' }, { status: 500 })
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const userData = await request.json()
-
-    // TODO: Implement user creation logic
-    // - Validate input data
-    // - Check permissions (admin only)
-    // - Hash password if provided
-    // - Save to database
-    // - Return created user
-
-    return NextResponse.json(
-      {
-        success: true,
-        data: {
-          id: Date.now(),
-          ...userData,
-        },
-        message: 'User created successfully',
-      },
-      { status: 201 },
-    )
-  } catch (_error) {
-    return NextResponse.json({ success: false, error: 'Failed to create user' }, { status: 400 })
   }
 }

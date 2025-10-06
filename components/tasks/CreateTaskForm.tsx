@@ -5,6 +5,7 @@ interface CreateTaskFormProps {
   projectId: string
   parentTaskId?: string
   onCreated?: () => void
+  onCancel?: () => void
   buttonLabel?: string
   compact?: boolean
   variant?: 'main' | 'sub'
@@ -14,6 +15,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
   projectId,
   parentTaskId,
   onCreated,
+  onCancel,
   buttonLabel = 'Add Task',
   compact = false,
   variant = 'main',
@@ -57,6 +59,7 @@ export const CreateTaskForm: React.FC<CreateTaskFormProps> = ({
     setName('')
     setError(null)
     setIsFormVisible(false)
+    if (onCancel) onCancel()
   }
 
   if (!isFormVisible && variant === 'main') {

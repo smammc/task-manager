@@ -21,7 +21,3 @@ export function formatDate(date: Date | string, format: 'short' | 'long' = 'shor
     year: 'numeric',
   })
 }
-
-export function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}

@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { databaseConfig } from '@/config/database'
 import { getUserFromRequest } from '@/lib/server/auth'
 import { getMainTasksWithProgress } from '@/lib/server/tasks'
+import { TaskSchema } from '@/types/task'
+import { z } from 'zod'
 
 // POST /api/tasks
 export async function POST(request: NextRequest) {
@@ -10,27 +12,14 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
+
     const body = await request.json()
-    console.log('POST /api/tasks request body:', body)
-    const {
-      name,
-      projectId,
-      status = 'Not Started',
-      description = '',
-      parentTaskId = null,
-      categoryId = null,
-      deadline = null,
-      endDate = null,
-    } = body
-    if (!name || !projectId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing name or projectId' },
-        { status: 400 },
-      )
-    }
+    // Zod validation
+    const validatedTask = TaskSchema.omit({ id: true }).parse(body)
+
     // Check if project exists
     const projectResult = await databaseConfig.query('SELECT id FROM projects WHERE id = $1', [
-      projectId,
+      validatedTask.projectId,
     ])
     if (!projectResult.rowCount) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
@@ -40,11 +29,26 @@ export async function POST(request: NextRequest) {
       `INSERT INTO tasks (id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date)
        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at`,
-      [projectId, name, status, description, parentTaskId, categoryId, deadline, endDate],
+      [
+        validatedTask.projectId,
+        validatedTask.name,
+        validatedTask.status,
+        validatedTask.description || null,
+        validatedTask.parentTaskId || null,
+        validatedTask.categoryId || null,
+        validatedTask.deadline || null,
+        validatedTask.endDate || null,
+      ],
     )
     const task = insertResult.rows[0]
     return NextResponse.json({ success: true, task })
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid data', details: z.flattenError(error) },
+        { status: 400 },
+      )
+    }
     console.error('POST /api/tasks error:', error)
     return NextResponse.json({ success: false, error: 'Failed to create task' }, { status: 500 })
   }
@@ -56,6 +60,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
     const mainOnly = searchParams.get('mainOnly') === '1'
+
     if (!projectId) {
       return NextResponse.json({ success: false, error: 'Missing projectId' }, { status: 400 })
     }
@@ -63,6 +68,7 @@ export async function GET(request: NextRequest) {
       const tasks = await getMainTasksWithProgress(projectId)
       return NextResponse.json({ success: true, tasks })
     }
+
     const query = `SELECT id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at FROM tasks WHERE project_id = $1 ORDER BY created_at ASC`
     const result = await databaseConfig.query(query, [projectId])
     return NextResponse.json({ success: true, tasks: result.rows })
@@ -80,42 +86,44 @@ export async function PATCH(request: NextRequest) {
     if (!user) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
-    const { id, name, status, description, parentTaskId, categoryId, deadline, endDate } =
-      await request.json()
-    if (!id) {
-      return NextResponse.json({ success: false, error: 'Missing task id' }, { status: 400 })
-    }
+    const body = await request.json()
+
+    // Partial Schema for updates (id required, other fields optional)
+    const updateSchema = TaskSchema.partial().required({ id: true })
+    const validatedData = updateSchema.parse(body)
+
+    const { id, ...updateFields } = validatedData
     // Build dynamic update query
     const fields = []
     const values = []
     let idx = 1
-    if (name !== undefined) {
+    if (updateFields.name !== undefined) {
       fields.push(`name = $${idx++}`)
-      values.push(name)
+      values.push(updateFields.name)
     }
-    if (status !== undefined) {
+    if (updateFields.status !== undefined) {
       fields.push(`status = $${idx++}`)
-      values.push(status)
+      values.push(updateFields.status)
     }
-    if (description !== undefined) {
+    if (updateFields.description !== undefined) {
       fields.push(`description = $${idx++}`)
-      values.push(description)
+      values.push(updateFields.description)
     }
-    if (parentTaskId !== undefined) {
+    if (updateFields.parentTaskId !== undefined) {
       fields.push(`parent_task_id = $${idx++}`)
-      values.push(parentTaskId)
+      values.push(updateFields.parentTaskId)
     }
-    if (categoryId !== undefined) {
+    if (updateFields.categoryId !== undefined) {
       fields.push(`category_id = $${idx++}`)
-      values.push(categoryId)
+      values.push(updateFields.categoryId)
     }
-    if (deadline !== undefined) {
+    if (updateFields.deadline !== undefined) {
       fields.push(`deadline = $${idx++}`)
-      values.push(deadline)
+      values.push(updateFields.deadline)
     }
-    if (endDate !== undefined) {
+    if (updateFields.endDate !== undefined) {
       fields.push(`end_date = $${idx++}`)
-      values.push(endDate)
+      values.push(updateFields.endDate)
     }
     if (!fields.length) {
       return NextResponse.json({ success: false, error: 'No fields to update' }, { status: 400 })
@@ -128,6 +136,12 @@ export async function PATCH(request: NextRequest) {
     }
     return NextResponse.json({ success: true, task: result.rows[0] })
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid data', details: z.flattenError(error) },
+        { status: 400 },
+      )
+    }
     return NextResponse.json({ success: false, error: 'Failed to update task' }, { status: 500 })
   }
 }

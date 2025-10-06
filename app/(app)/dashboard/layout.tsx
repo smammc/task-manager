@@ -4,9 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser } from '@/hooks/useUser'
 import { useAuth } from '@/hooks/useAuth'
-import { LogOut, Home, FolderOpen, Settings, ChevronRight } from 'lucide-react'
+import { LogOut, Home, FolderOpen, ChevronRight } from 'lucide-react'
 import Stopwatch from '@/components/Stopwatch'
-import CollapsedClock from '@/components/CollapsedClock'
 
 function NavLink({
   href,
@@ -87,9 +86,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <NavLink href="/dashboard/projects" icon={FolderOpen} isCollapsed={isCollapsed}>
           Projects
-        </NavLink>
-        <NavLink href="/dashboard/settings" icon={Settings} isCollapsed={isCollapsed}>
-          Settings
         </NavLink>
       </nav>
 
