@@ -1,0 +1,76 @@
+// Main task row component
+import React, { useState } from 'react'
+import { Task } from '@/types/task'
+import {
+  TaskNameCell,
+  ProgressCell,
+  StatusCell,
+  DueDateCell,
+  PriorityCell,
+  ActionsCell,
+} from '../cells'
+import type { Priority } from '../types'
+
+export interface MainTaskRowProps {
+  task: Task
+  level?: number
+  hasSubtasks?: boolean
+  subtasks?: React.ReactNode
+  onEdit?: (taskId: string) => void
+  onDelete?: (taskId: string) => void
+  onStartTimer?: (taskId: string) => void
+  className?: string
+}
+
+const MainTaskRow: React.FC<MainTaskRowProps> = ({
+  task,
+  level = 0,
+  hasSubtasks = false,
+  subtasks,
+  onEdit,
+  onDelete,
+  onStartTimer,
+  className = '',
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false)
+
+  const handleToggle = () => {
+    if (hasSubtasks) {
+      setIsExpanded(!isExpanded)
+    }
+  }
+
+  const baseClasses = 'border-b border-gray-200 hover:bg-gray-50 transition-colors group'
+
+  return (
+    <>
+      <tr className={`${baseClasses} ${className}`}>
+        <TaskNameCell
+          name={task.name}
+          level={level}
+          hasSubtasks={hasSubtasks}
+          isExpanded={isExpanded}
+          onToggle={handleToggle}
+        />
+        <ProgressCell completed={task.completedCount || 0} total={task.totalCount || 0} />
+        <StatusCell status={task.status} />
+        <DueDateCell dueDate={task.deadline} />
+        <PriorityCell priority={task.categoryId as Priority} />
+        <ActionsCell
+          onEdit={() => onEdit?.(task.id)}
+          onDelete={() => onDelete?.(task.id)}
+          onStartTimer={() => onStartTimer?.(task.id)}
+        />
+      </tr>
+      {hasSubtasks && isExpanded && subtasks && (
+        <tr className="bg-gray-50">
+          <td colSpan={6} className="p-0">
+            {subtasks}
+          </td>
+        </tr>
+      )}
+    </>
+  )
+}
+
+export default MainTaskRow
