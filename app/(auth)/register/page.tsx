@@ -1,39 +1,38 @@
 'use client'
+
 import Link from 'next/link'
-import { Button } from '@/components/ui/Button'
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
-import { RegisterFormData } from '@/types/auth'
+import { useState } from 'react'
+import { RegisterSchema, RegisterFormData } from '@/types/auth'
 import { register } from '@/lib/auth'
+import { Button } from '@/components/ui/Button'
 
 export default function RegisterPage() {
-  const [form, setForm] = useState<RegisterFormData>({ name: '', email: '', password: '' })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const router = useRouter()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value })
+  const form = useForm<RegisterFormData>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+    },
+  })
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setLoading(true)
     setError('')
     setSuccess('')
-  }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!form.name || !form.email || !form.password) {
-      setError('Please fill all fields')
-      return
-    }
-    if (form.password.length < 6) {
-      setError('Passwords must be at least 6 characters long')
-      return
-    }
     try {
-      setLoading(true)
-      await register(form.name, form.email, form.password)
+      await register(data.name, data.email, data.password)
       setSuccess('Account created successfully')
-      setForm({ name: '', email: '', password: '' })
+      form.reset()
       setTimeout(() => router.push('/login'), 1500)
     } catch (err) {
       if (err instanceof Error) {
@@ -56,40 +55,52 @@ export default function RegisterPage() {
   return (
     <div className="card w-full max-w-sm">
       <h1 className="mb-6 text-center text-2xl font-bold">Register</h1>
-      <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Full Name"
-          required
-          className="rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-        <input
-          type="email"
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-          placeholder="Email"
-          required
-          className="rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-        <input
-          type="password"
-          name="password"
-          value={form.password}
-          onChange={handleChange}
-          placeholder="Password"
-          required
-          className="rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-        />
-        {error && <p className="text-sm text-red-600">{error}</p>}
-        {success && <p className="text-sm text-green-600">{success}</p>}
-        <Button type="submit" disabled={loading} className="w-full">
+
+      <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-4">
+        <div>
+          <input
+            type="text"
+            placeholder="Full Name"
+            {...form.register('name')}
+            className="w-full rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          {form.formState.errors.name && (
+            <p className="mt-1 text-sm text-red-600">{form.formState.errors.name.message}</p>
+          )}
+        </div>
+
+        <div>
+          <input
+            type="email"
+            placeholder="Email"
+            {...form.register('email')}
+            className="w-full rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          {form.formState.errors.email && (
+            <p className="mt-1 text-sm text-red-600">{form.formState.errors.email.message}</p>
+          )}
+        </div>
+
+        <div>
+          <input
+            type="password"
+            placeholder="Password"
+            {...form.register('password')}
+            className="w-full rounded border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+          />
+          {form.formState.errors.password && (
+            <p className="mt-1 text-sm text-red-600">{form.formState.errors.password.message}</p>
+          )}
+        </div>
+
+        {error && <div className="text-center text-sm text-red-600">{error}</div>}
+        {success && <div className="text-center text-sm text-green-600">{success}</div>}
+
+        <Button type="submit" className="w-full" disabled={loading}>
           {loading ? 'Creating Account...' : 'Register'}
         </Button>
       </form>
+
       <div className="mt-4 text-center">
         <Link href="/login" className="text-sm text-blue-600 hover:underline">
           Already have an account? Login

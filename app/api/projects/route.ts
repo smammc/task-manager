@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { databaseConfig } from '@/config/database'
-import { Project } from '@/types/project'
+import { Project, ProjectSchema } from '@/types/project'
+import { MainTask } from '@/types/task'
+import { z } from 'zod'
 
 export async function GET(request: NextRequest) {
   //TODO Make Route return only projects where the user is in.
@@ -28,7 +30,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch main tasks for all projects (parent_task_id IS NULL)
     const projectIds = projects.map((p) => p.id)
-    let mainTasksByProject: Record<string, any[]> = {}
+    let mainTasksByProject: Record<string, MainTask[]> = {}
     if (projectIds.length > 0) {
       const mainTasksResult = await databaseConfig.query(
         `SELECT id, name, project_id FROM tasks WHERE parent_task_id IS NULL AND project_id = ANY($1::uuid[])`,
@@ -40,7 +42,7 @@ export async function GET(request: NextRequest) {
           acc[row.project_id].push({ id: row.id, name: row.name })
           return acc
         },
-        {} as Record<string, any[]>,
+        {} as Record<string, MainTask[]>,
       )
     }
     // Attach mainTasks to each project
@@ -58,15 +60,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, description, status, startDate, endDate, teamId, ownerId } = body
 
-    // Basic validation
-    if (!name || !status || !teamId || !ownerId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields.' },
-        { status: 400 },
-      )
-    }
+    // Validation
+    const validatedData = ProjectSchema.omit({ id: true }).parse(body)
 
     // Insert project
     const result = await databaseConfig.query(
@@ -74,19 +70,25 @@ export async function POST(request: NextRequest) {
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING id, team_id, owner_id, name, description, status, start_date, end_date`,
       [
-        name,
-        description || null,
-        status,
-        startDate ? new Date(startDate) : null,
-        endDate ? new Date(endDate) : null,
-        teamId,
-        ownerId,
+        validatedData.name,
+        validatedData.description || null,
+        validatedData.status,
+        validatedData.startDate ? new Date(validatedData.startDate) : null,
+        validatedData.endDate ? new Date(validatedData.endDate) : null,
+        validatedData.teamId,
+        validatedData.ownerId,
       ],
     )
 
     const project = result.rows[0]
     return NextResponse.json({ success: true, data: project }, { status: 201 })
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid data', details: error },
+        { status: 400 },
+      )
+    }
     console.error('Error creating project:', error)
     return NextResponse.json({ success: false, error: 'Failed to create project' }, { status: 500 })
   }
