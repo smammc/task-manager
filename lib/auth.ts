@@ -40,6 +40,7 @@ export async function register(name: string, email: string, password: string): P
 }
 
 export async function logout(): Promise<void> {
+  console.log('Logout function called')
   const response = await fetch('/api/auth/logout', {
     method: 'POST',
     credentials: 'include',
@@ -52,5 +53,8 @@ export async function logout(): Promise<void> {
     } catch (error) {
       throw new Error(message)
     }
+    throw new Error(message)
   }
+  // Redirect to login page after successful logout
+  window.location.href = '/login'
 }
