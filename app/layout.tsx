@@ -11,8 +11,8 @@ const poppins = Poppins({
 })
 
 export const metadata = {
-  title: 'Next.js Dashboard App',
-  description: 'A modern dashboard application built with Next.js',
+  title: 'Task Manager',
+  description: 'A modern project management application built with Next.js and Tailwind CSS',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

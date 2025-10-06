@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
         totalPages,
       },
     })
-  } catch (_error) {
+  } catch (error) {
     // Optionally log error for debugging
     return NextResponse.json({ success: false, error: 'Failed to fetch users' }, { status: 500 })
   }

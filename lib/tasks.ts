@@ -1,4 +1,4 @@
-import { Task } from '@/types/project'
+import { Task } from '@/types/task'
 
 export function mapApiTask(t: Record<string, unknown>): Task {
   return {

@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { Task } from '@/types/project'
+import { Task } from '@/types/task'
 import { mapApiTask } from '@/lib/tasks'
 
 export function useTasks(projectId: string) {
