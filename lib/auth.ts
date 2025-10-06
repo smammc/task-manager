@@ -45,7 +45,6 @@ export async function logout(): Promise<void> {
     method: 'POST',
     credentials: 'include',
   })
-  console.log('Logout response:', response.status, response.ok)
   if (!response.ok) {
     let message = 'Failed to logout'
     try {
@@ -56,7 +55,6 @@ export async function logout(): Promise<void> {
     }
     throw new Error(message)
   }
-  console.log('Logout successful, redirecting...')
   // Redirect to login page after successful logout
   window.location.href = '/login'
 }
