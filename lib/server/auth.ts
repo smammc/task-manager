@@ -5,10 +5,10 @@ import { cookies } from 'next/headers'
 
 const secret = process.env.JWT_SECRET as string
 
-export async function getUserByEmail(email: string): Promise<User | null> {
+export async function getUserById(id: string): Promise<User | null> {
   const response = await databaseConfig.query(
-    'SELECT id, name, email, role FROM users WHERE email = $1',
-    [email],
+    'SELECT id, name, email, role FROM users WHERE id = $1',
+    [id],
   )
   if (response.rows.length === 0) return null
 

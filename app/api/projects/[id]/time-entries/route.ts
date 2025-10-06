@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    const projectId = params.id
+    const { id: projectId } = await params
     if (!projectId) {
       return NextResponse.json({ success: false, error: 'Missing project ID' }, { status: 400 })
     }

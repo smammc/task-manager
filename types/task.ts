@@ -1,3 +1,5 @@
+import { z } from 'zod'
+
 export const TaskSchema = z.object({
   id: z.string(),
   projectId: z.string(),

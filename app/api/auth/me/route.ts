@@ -1,8 +1,16 @@
-import { getUserFromRequest } from '@/lib/server/auth'
+import { getUserById, getUserFromRequest } from '@/lib/server/auth'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
-  const user = await getUserFromRequest(request)
+  const basicUser = await getUserFromRequest(request)
+
+  console.log(basicUser)
+  if (!basicUser) {
+    return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const userId = basicUser.id
+  const user = await getUserById(userId)
 
   if (!user) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
@@ -10,9 +18,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     success: true,
-    data: {
-      id: user.id,
-      role: user.role,
-    },
+    data: user,
   })
 }
