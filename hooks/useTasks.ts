@@ -1,25 +1,19 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Task } from '@/types/task'
 import { mapApiTask } from '@/lib/tasks'
 
+async function fetchTasks(projectId: string): Promise<Task[]> {
+  const res = await fetch(`/api/tasks?projectId=${projectId}`)
+  const data = await res.json()
+  if (!data.success) throw new Error('Failed to fetch tasks')
+  return (data.tasks || []).map(mapApiTask)
+}
+
 export function useTasks(projectId: string) {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
-
-  const fetchTasks = useCallback(() => {
-    if (!projectId) return
-    setLoading(true)
-    fetch(`/api/tasks?projectId=${projectId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setTasks((data.tasks || []).map(mapApiTask))
-      })
-      .finally(() => setLoading(false))
-  }, [projectId])
-
-  useEffect(() => {
-    fetchTasks()
-  }, [fetchTasks])
-
-  return { tasks, loading, refetch: fetchTasks }
+  return useQuery<Task[], Error>({
+    queryKey: ['tasks', projectId],
+    queryFn: () => fetchTasks(projectId),
+    enabled: !!projectId,
+    staleTime: 5 * 60 * 1000,
+  })
 }

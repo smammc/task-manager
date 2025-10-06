@@ -1,5 +1,5 @@
 // Export all grid components
-export { default as TaskGrid } from './TaskGrid'
+export { default as TaskGrid } from './Grid'
 export { default as GridHeader } from './GridHeader'
 export { default as ColumnHeader } from './ColumnHeader'
 
@@ -16,5 +16,5 @@ export type { TaskStatus, Priority } from './types'
 
 // Export component-specific types
 export type { GridHeaderProps } from './GridHeader'
-export type { TaskGridProps } from './TaskGrid'
+export type { GridProps } from './Grid'
 export type { ColumnHeaderProps } from './ColumnHeader'

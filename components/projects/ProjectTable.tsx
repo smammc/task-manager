@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useTasks } from '@/hooks/useTasks'
-import { Task, Project } from '@/types/project'
+import { Project } from '@/types/project'
+import { Task } from '@/types/task'
 import { TimerButton } from '@/components/tasks/TimerButton'
 import {
   ChevronDown,

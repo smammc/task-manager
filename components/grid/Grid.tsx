@@ -7,7 +7,7 @@ import { ColumnsRow, MainTaskRow, SubTaskRow } from './rows'
 import type { ColumnConfig } from './rows/ColumnsRow'
 import type { SortDirection } from './ColumnHeader'
 
-export interface TaskGridProps {
+export interface GridProps {
   project: Project
   tasks: Task[]
   onEditTask?: (taskId: string) => void
@@ -16,7 +16,7 @@ export interface TaskGridProps {
   className?: string
 }
 
-const TaskGrid: React.FC<TaskGridProps> = ({
+const Grid: React.FC<GridProps> = ({
   project,
   tasks,
   onEditTask,
@@ -156,4 +156,4 @@ const TaskGrid: React.FC<TaskGridProps> = ({
   )
 }
 
-export default TaskGrid
+export default Grid
