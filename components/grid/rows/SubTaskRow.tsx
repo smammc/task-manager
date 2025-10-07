@@ -7,8 +7,11 @@ import type { Priority } from '../types'
 export interface SubTaskRowProps {
   task: Task
   level?: number
-  onEdit?: (taskId: string) => void
-  onDelete?: (taskId: string) => void
+  onEdit?: (taskId: string) => Promise<void>
+  onDelete?: (taskId: string) => Promise<void>
+  editingTaskId?: string | null
+  onSaveEdit?: (taskId: string, newName: string) => Promise<void>
+  onCancelEdit?: () => void
   className?: string
 }
 
@@ -17,13 +20,23 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
   level = 1,
   onEdit,
   onDelete,
+  editingTaskId,
+  onSaveEdit,
+  onCancelEdit,
   className = '',
 }) => {
   const baseClasses = 'border-b border-gray-200 hover:bg-gray-50 transition-colors group'
 
   return (
     <tr className={`${baseClasses} ${className}`}>
-      <TaskNameCell name={task.name} level={level} hasSubtasks={false} />
+      <TaskNameCell
+        name={task.name}
+        level={level}
+        hasSubtasks={false}
+        isEditing={editingTaskId === task.id}
+        onSave={(newName) => onSaveEdit?.(task.id, newName)}
+        onCancel={onCancelEdit}
+      />
       {/* Empty cell for progress column alignment */}
       <td className="w-[200px] px-6 py-5"></td>
       <StatusCell status={task.status} />
@@ -33,8 +46,8 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
         taskId={task.id}
         taskName={task.name}
         // projectName={task.projectName}
-        onEdit={() => onEdit?.(task.id)}
-        onDelete={() => onDelete?.(task.id)}
+        onEdit={onEdit}
+        onDelete={onDelete}
       />
     </tr>
   )

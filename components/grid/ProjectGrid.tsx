@@ -3,17 +3,50 @@
 import { useTasks } from '@/hooks/useTasks'
 import Grid from '@/components/grid/Grid'
 import { Project } from '@/types/project'
+import { useState } from 'react'
 
 interface ProjectGridProps {
   project: Project
 }
 
 export function ProjectGrid({ project }: ProjectGridProps) {
-  const { data: tasks, isLoading, isError, error, refetch } = useTasks(project.id)
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const {
+    data: tasks = [],
+    isLoading: loading,
+    refetch,
+    deleteTask,
+    isDeleting,
+    updateTask,
+    isUpdating,
+  } = useTasks(project.id)
 
-  if (isLoading) {
+  const handleEditTask = async (taskId: string, newName: string) => {
+    try {
+      await updateTask(taskId, newName)
+      setEditingTaskId(null)
+    } catch (error) {
+      console.error('Error updating task:', error)
+      alert('Failed to update task. Please try again.')
+    }
+  }
+
+  if (loading) {
     return <div className="text-sm text-gray-400">Loading tasks...</div>
   }
 
-  return <Grid project={project} tasks={tasks || []} />
+  return (
+    <Grid
+      project={project}
+      tasks={tasks || []}
+      onDeleteTask={deleteTask}
+      onEditTask={(taskId) => {
+        setEditingTaskId(taskId)
+        return Promise.resolve()
+      }}
+      editingTaskId={editingTaskId}
+      onSaveEdit={handleEditTask}
+      onCancelEdit={() => setEditingTaskId(null)}
+    />
+  )
 }

@@ -1,14 +1,14 @@
 // Actions cell with action buttons
 import React from 'react'
-import { MoreHorizontal, Edit2, Trash2, PlayCircle } from 'lucide-react'
+import { MoreHorizontal, Edit2, Trash2 } from 'lucide-react'
 import { TimerButton } from '@/components/tasks/TimerButton'
 
 export interface ActionsCellProps {
   taskId: string
   taskName?: string
   projectName?: string
-  onEdit?: (taskId: string) => void
-  onDelete?: (taskId: string) => void
+  onEdit?: (taskId: string) => Promise<void>
+  onDelete?: (taskId: string) => Promise<void>
   className?: string
 }
 

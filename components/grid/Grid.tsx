@@ -10,8 +10,11 @@ import type { SortDirection } from './ColumnHeader'
 export interface GridProps {
   project: Project
   tasks: Task[]
-  onEditTask?: (taskId: string) => void
-  onDeleteTask?: (taskId: string) => void
+  onEditTask?: (taskId: string) => Promise<void>
+  onDeleteTask?: (taskId: string) => Promise<void>
+  editingTaskId?: string | null
+  onSaveEdit?: (taskId: string, newName: string) => Promise<void>
+  onCancelEdit?: () => void
   className?: string
 }
 
@@ -20,6 +23,9 @@ const Grid: React.FC<GridProps> = ({
   tasks,
   onEditTask,
   onDeleteTask,
+  editingTaskId,
+  onSaveEdit,
+  onCancelEdit,
   className = '',
 }) => {
   const [sortColumn, setSortColumn] = useState<string>('')
@@ -147,6 +153,9 @@ const Grid: React.FC<GridProps> = ({
                                 level={1}
                                 onEdit={onEditTask}
                                 onDelete={onDeleteTask}
+                                editingTaskId={editingTaskId}
+                                onSaveEdit={onSaveEdit}
+                                onCancelEdit={onCancelEdit}
                               />
                             ))}
                           </tbody>
@@ -155,6 +164,9 @@ const Grid: React.FC<GridProps> = ({
                     }
                     onEdit={onEditTask}
                     onDelete={onDeleteTask}
+                    editingTaskId={editingTaskId}
+                    onSaveEdit={onSaveEdit}
+                    onCancelEdit={onCancelEdit}
                   />
                 )
               })

@@ -28,7 +28,13 @@ interface TaskWithTimeSpent extends Task {
 }
 
 export const ProjectTable: React.FC<ProjectTableProps> = ({ project }) => {
-  const { data: tasks = [], isLoading: loading, refetch } = useTasks(project.id)
+  const {
+    data: tasks = [],
+    isLoading: loading,
+    refetch,
+    deleteTask,
+    isDeleting,
+  } = useTasks(project.id)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [showingSubtaskForm, setShowingSubtaskForm] = useState<Record<string, boolean>>({})
   const [editingTask, setEditingTask] = useState<string | null>(null)
@@ -137,20 +143,8 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({ project }) => {
     if (!confirm('Are you sure you want to delete this task? This action cannot be undone.')) {
       return
     }
-
     try {
-      const response = await fetch('/api/tasks', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: taskId }),
-      })
-
-      const result = await response.json()
-      if (result.success) {
-        refetch()
-      } else {
-        throw new Error(result.error || 'Failed to delete task')
-      }
+      await deleteTask(taskId)
     } catch (error) {
       console.error('Error deleting task:', error)
       alert('Failed to delete task. Please try again.')

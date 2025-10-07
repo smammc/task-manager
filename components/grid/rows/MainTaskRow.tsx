@@ -16,8 +16,11 @@ export interface MainTaskRowProps {
   level?: number
   hasSubtasks?: boolean
   subtasks?: React.ReactNode
-  onEdit?: (taskId: string) => void
-  onDelete?: (taskId: string) => void
+  onEdit?: (taskId: string) => Promise<void>
+  onDelete?: (taskId: string) => Promise<void>
+  editingTaskId?: string | null
+  onSaveEdit?: (taskId: string, newName: string) => Promise<void>
+  onCancelEdit?: () => void
   className?: string
 }
 
@@ -28,6 +31,9 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   subtasks,
   onEdit,
   onDelete,
+  editingTaskId,
+  onSaveEdit,
+  onCancelEdit,
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -49,6 +55,9 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           hasSubtasks={hasSubtasks}
           isExpanded={isExpanded}
           onToggle={handleToggle}
+          isEditing={editingTaskId === task.id}
+          onSave={(newName) => onSaveEdit?.(task.id, newName)}
+          onCancel={onCancelEdit}
         />
         <ProgressCell
           completed={task.completedCount || 0}
@@ -62,8 +71,8 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           taskId={task.id}
           taskName={task.name}
           //projectName={task.projectName}
-          onEdit={() => onEdit?.(task.id)}
-          onDelete={() => onDelete?.(task.id)}
+          onEdit={onEdit}
+          onDelete={onDelete}
         />
       </tr>
       {hasSubtasks && isExpanded && subtasks && (
