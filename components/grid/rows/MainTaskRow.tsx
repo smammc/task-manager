@@ -52,7 +52,11 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           isExpanded={isExpanded}
           onToggle={handleToggle}
         />
-        <ProgressCell completed={task.completedCount || 0} total={task.totalCount || 0} />
+        <ProgressCell
+          completed={task.completedCount || 0}
+          total={task.totalCount || 0}
+          className={'w-[200px]'}
+        />
         <StatusCell status={task.status} />
         <DueDateCell dueDate={task.deadline} />
         <PriorityCell priority={task.categoryId as Priority} />

@@ -1,44 +1,42 @@
 // Actions cell with action buttons
 import React from 'react'
 import { MoreHorizontal, Edit2, Trash2, PlayCircle } from 'lucide-react'
+import { TaskTimer } from '@/components/TaskTimer'
 
 export interface ActionsCellProps {
-  onEdit?: () => void
-  onDelete?: () => void
-  onStartTimer?: () => void
+  taskId: string
+  taskName?: string
+  projectName?: string
+  onEdit?: (taskId: string) => void
+  onDelete?: (taskId: string) => void
   className?: string
 }
 
 const ActionsCell: React.FC<ActionsCellProps> = ({
+  taskId,
+  taskName,
+  projectName,
   onEdit,
   onDelete,
-  onStartTimer,
   className = '',
 }) => {
   const [showActions, setShowActions] = React.useState(false)
 
   return (
     <td className={`px-4 py-3 text-sm ${className}`}>
-      <div className="relative flex items-center justify-end gap-1">
-        {/* Quick actions - always visible on hover */}
-        <div className="hidden items-center gap-1 group-hover:flex">
-          {onStartTimer && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onStartTimer()
-              }}
-              className="rounded p-1.5 text-gray-400 transition-colors hover:bg-green-50 hover:text-green-600"
-              title="Start Timer"
-            >
-              <PlayCircle className="h-4 w-4" />
-            </button>
-          )}
+      <div className="relative flex items-center justify-center gap-1">
+        <div className="flex items-center gap-1">
+          <TaskTimer
+            taskId={taskId}
+            taskName={taskName}
+            projectName={projectName}
+            variant="button"
+          />
           {onEdit && (
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                onEdit()
+                onEdit(taskId)
               }}
               className="rounded p-1.5 text-gray-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
               title="Edit"
@@ -50,7 +48,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({
             <button
               onClick={(e) => {
                 e.stopPropagation()
-                onDelete()
+                onDelete(taskId)
               }}
               className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
               title="Delete"

@@ -22,9 +22,9 @@ const ColumnHeader: React.FC<ColumnHeaderProps> = ({
   align = 'left',
 }) => {
   const alignmentClasses = {
-    left: 'text-left',
-    center: 'text-center',
-    right: 'text-right',
+    left: 'text-left justify-start',
+    center: 'text-center justify-center',
+    right: 'text-right justify-end',
   }
 
   const baseClasses =
@@ -38,11 +38,8 @@ const ColumnHeader: React.FC<ColumnHeaderProps> = ({
   }
 
   return (
-    <th
-      className={`${baseClasses} ${sortableClasses} ${alignmentClasses[align]} ${className}`}
-      onClick={handleClick}
-    >
-      <div className="flex items-center gap-1">
+    <th className={`${baseClasses} ${sortableClasses} ${className}`} onClick={handleClick}>
+      <div className={`flex items-center gap-1 ${alignmentClasses[align]}`}>
         {children}
         {sortable && (
           <span className="text-gray-400">

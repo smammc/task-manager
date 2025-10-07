@@ -27,7 +27,7 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
     <tr className={`${baseClasses} ${className}`}>
       <TaskNameCell name={task.name} level={level} hasSubtasks={false} />
       {/* Empty cell for progress column alignment */}
-      <td className="px-4 py-3"></td>
+      <td className="w-[200px] px-6 py-5"></td>
       <StatusCell status={task.status} />
       <DueDateCell dueDate={task.deadline} />
       <PriorityCell priority={task.categoryId as Priority} />
