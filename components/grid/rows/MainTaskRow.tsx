@@ -18,7 +18,6 @@ export interface MainTaskRowProps {
   subtasks?: React.ReactNode
   onEdit?: (taskId: string) => void
   onDelete?: (taskId: string) => void
-  onStartTimer?: (taskId: string) => void
   className?: string
 }
 
@@ -29,7 +28,6 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   subtasks,
   onEdit,
   onDelete,
-  onStartTimer,
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -61,9 +59,11 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
         <DueDateCell dueDate={task.deadline} />
         <PriorityCell priority={task.categoryId as Priority} />
         <ActionsCell
+          taskId={task.id}
+          taskName={task.name}
+          //projectName={task.projectName}
           onEdit={() => onEdit?.(task.id)}
           onDelete={() => onDelete?.(task.id)}
-          onStartTimer={() => onStartTimer?.(task.id)}
         />
       </tr>
       {hasSubtasks && isExpanded && subtasks && (

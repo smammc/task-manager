@@ -12,7 +12,6 @@ export interface GridProps {
   tasks: Task[]
   onEditTask?: (taskId: string) => void
   onDeleteTask?: (taskId: string) => void
-  onStartTimer?: (taskId: string) => void
   className?: string
 }
 
@@ -21,7 +20,6 @@ const Grid: React.FC<GridProps> = ({
   tasks,
   onEditTask,
   onDeleteTask,
-  onStartTimer,
   className = '',
 }) => {
   const [sortColumn, setSortColumn] = useState<string>('')
@@ -40,7 +38,6 @@ const Grid: React.FC<GridProps> = ({
   // Handle sorting
   const handleSort = (columnKey: string) => {
     if (sortColumn === columnKey) {
-      // Toggle direction: asc -> desc -> null
       if (sortDirection === 'asc') {
         setSortDirection('desc')
       } else if (sortDirection === 'desc') {
@@ -70,19 +67,34 @@ const Grid: React.FC<GridProps> = ({
     return { mainTasks, subtasksMap }
   }, [tasks])
 
-  // Sort tasks
+  // Sort tasks with type safety
   const sortedMainTasks = useMemo(() => {
     if (!sortColumn || !sortDirection) return mainTasks
 
     return [...mainTasks].sort((a, b) => {
-      let aValue: any = a[sortColumn as keyof Task]
-      let bValue: any = b[sortColumn as keyof Task]
+      // Helper function to get comparable values
+      const getComparableValue = (task: Task, key: string): string | number => {
+        if (key === 'name') {
+          return task.name.toLowerCase()
+        }
+        if (key === 'deadline' || key === 'dueDate') {
+          return task.deadline ? new Date(task.deadline).getTime() : 0
+        }
+        if (key === 'status') {
+          return task.status ?? ''
+        }
+        if (key === 'priority') {
+          return task.categoryId ?? ''
+        }
 
-      // Handle special cases
-      if (sortColumn === 'dueDate') {
-        aValue = a.deadline ? new Date(a.deadline).getTime() : 0
-        bValue = b.deadline ? new Date(b.deadline).getTime() : 0
+        const value = task[key as keyof Task]
+        if (typeof value === 'string') return value.toLowerCase()
+        if (typeof value === 'number') return value
+        return String(value ?? '')
       }
+
+      const aValue = getComparableValue(a, sortColumn)
+      const bValue = getComparableValue(b, sortColumn)
 
       if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1
       if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1
@@ -135,7 +147,6 @@ const Grid: React.FC<GridProps> = ({
                                 level={1}
                                 onEdit={onEditTask}
                                 onDelete={onDeleteTask}
-                                onStartTimer={onStartTimer}
                               />
                             ))}
                           </tbody>
@@ -144,7 +155,6 @@ const Grid: React.FC<GridProps> = ({
                     }
                     onEdit={onEditTask}
                     onDelete={onDeleteTask}
-                    onStartTimer={onStartTimer}
                   />
                 )
               })

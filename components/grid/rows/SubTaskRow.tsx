@@ -9,7 +9,6 @@ export interface SubTaskRowProps {
   level?: number
   onEdit?: (taskId: string) => void
   onDelete?: (taskId: string) => void
-  onStartTimer?: (taskId: string) => void
   className?: string
 }
 
@@ -18,7 +17,6 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
   level = 1,
   onEdit,
   onDelete,
-  onStartTimer,
   className = '',
 }) => {
   const baseClasses = 'border-b border-gray-200 hover:bg-gray-50 transition-colors group'
@@ -32,9 +30,11 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
       <DueDateCell dueDate={task.deadline} />
       <PriorityCell priority={task.categoryId as Priority} />
       <ActionsCell
+        taskId={task.id}
+        taskName={task.name}
+        // projectName={task.projectName}
         onEdit={() => onEdit?.(task.id)}
         onDelete={() => onDelete?.(task.id)}
-        onStartTimer={() => onStartTimer?.(task.id)}
       />
     </tr>
   )

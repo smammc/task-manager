@@ -1,59 +1,54 @@
-import React, { useState } from 'react'
-import { Play } from 'lucide-react'
+'use client'
+import React from 'react'
+import { Play, Square } from 'lucide-react'
+import { useTimer } from '@/hooks/useTimer'
 
-interface TimerButtonProps {
+type TimerButtonProps = {
   taskId: string
-  taskName: string
-  projectName: string
-  disabled?: boolean
-  onStart?: () => void
+  taskName?: string
+  projectName?: string
 }
 
-export const TimerButton: React.FC<TimerButtonProps> = ({
-  taskId,
-  taskName,
-  projectName,
-  disabled,
-  onStart,
-}) => {
-  const [loading, setLoading] = useState(false)
+export function TimerButton({ taskId }: TimerButtonProps) {
+  const { activeTimer, startTimer, stopTimer, loading } = useTimer()
 
-  const handleStart = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/tasks/${taskId}/timer/start`, { method: 'POST' })
-      const body = await res.json()
-      if (body.success) {
-        // Add task info for sidebar display
-        const timeEntry = body.timeEntry
-        timeEntry.task = { name: taskName, project_name: projectName }
-        window.dispatchEvent(
-          new CustomEvent('timerUpdate', {
-            detail: { type: 'start', timeEntry },
-          }),
-        )
-        if (onStart) onStart()
-      } else {
-        alert(body.error || 'Failed to start timer')
+  const isActive = activeTimer?.task_id === taskId
+
+  const handleClick = async () => {
+    if (isActive) {
+      const result = await stopTimer()
+      if (!result.success) {
+        alert(result.error || 'Failed to stop timer')
       }
-    } catch (err) {
-      alert('Network error starting timer')
-    } finally {
-      setLoading(false)
+    } else {
+      // Se há outro timer ativo, avisar
+      if (activeTimer) {
+        const confirmSwitch = confirm(`You have an active timer. Stop it and start this one?`)
+        if (!confirmSwitch) return
+
+        await stopTimer()
+      }
+
+      const result = await startTimer(taskId)
+      if (!result.success) {
+        alert(result.error || 'Failed to start timer')
+      }
     }
   }
 
   return (
     <button
-      className="flex items-center justify-center rounded bg-green-500 p-2 text-white transition-colors hover:bg-green-600 disabled:opacity-50"
-      onClick={handleStart}
-      disabled={loading || disabled}
-      title="Start Timer"
+      onClick={handleClick}
+      disabled={loading}
+      className={`flex h-6 w-6 items-center justify-center rounded transition-colors disabled:opacity-50 ${
+        isActive
+          ? 'bg-green-100 text-green-600 hover:bg-green-200'
+          : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600'
+      }`}
+      title={isActive ? 'Stop timer' : 'Start timer'}
+      aria-label={isActive ? 'Stop timer' : 'Start timer'}
     >
-      <Play className="h-3 w-3" />
-      {loading && (
-        <div className="ml-1 h-2 w-2 animate-spin rounded-full border border-white border-t-transparent" />
-      )}
+      {isActive ? <Square className="h-3 w-3" /> : <Play className="h-3 w-3" />}
     </button>
   )
 }

@@ -1,7 +1,7 @@
 // Actions cell with action buttons
 import React from 'react'
 import { MoreHorizontal, Edit2, Trash2, PlayCircle } from 'lucide-react'
-import { TaskTimer } from '@/components/TaskTimer'
+import { TimerButton } from '@/components/tasks/TimerButton'
 
 export interface ActionsCellProps {
   taskId: string
@@ -26,12 +26,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({
     <td className={`px-4 py-3 text-sm ${className}`}>
       <div className="relative flex items-center justify-center gap-1">
         <div className="flex items-center gap-1">
-          <TaskTimer
-            taskId={taskId}
-            taskName={taskName}
-            projectName={projectName}
-            variant="button"
-          />
+          <TimerButton taskId={taskId} taskName={taskName} projectName={projectName} />
           {onEdit && (
             <button
               onClick={(e) => {

@@ -22,34 +22,30 @@ interface ProjectTableProps {
   project: Project
 }
 
-// Add interface for task with time spent
 interface TaskWithTimeSpent extends Task {
-  timeSpent?: number // in minutes
-  progress?: number // 0-100 for main tasks based on subtask completion
+  timeSpent?: number
+  progress?: number
 }
 
 export const ProjectTable: React.FC<ProjectTableProps> = ({ project }) => {
-  const { tasks, loading, refetch } = useTasks(project.id)
+  const { data: tasks = [], isLoading: loading, refetch } = useTasks(project.id)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [showingSubtaskForm, setShowingSubtaskForm] = useState<Record<string, boolean>>({})
   const [editingTask, setEditingTask] = useState<string | null>(null)
   const [tasksWithTimeSpent, setTasksWithTimeSpent] = useState<TaskWithTimeSpent[]>([])
 
-  // Fetch time spent for each task
   useEffect(() => {
     const fetchTimeSpent = async () => {
       if (!tasks.length) return
 
       try {
-        // Fetch time entries for all tasks in this project
         const response = await fetch(`/api/projects/${project.id}/time-entries`)
         if (response.ok) {
           const data = await response.json()
           const timeEntries = data.timeEntries || []
 
-          // Calculate time spent per task
           const timeSpentByTask: Record<string, number> = {}
-          timeEntries.forEach((entry: any) => {
+          timeEntries.forEach((entry: { task_id: string; duration_seconds?: number }) => {
             if (entry.duration_seconds) {
               timeSpentByTask[entry.task_id] =
                 (timeSpentByTask[entry.task_id] || 0) + Math.round(entry.duration_seconds / 60)
