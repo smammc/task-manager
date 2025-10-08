@@ -16,11 +16,11 @@ export function ProjectGrid({ project }: ProjectGridProps) {
     isLoading: loading,
     refetch,
     deleteTask,
-    isDeleting,
+    isDeletingTask,
     updateTask,
-    isUpdating,
+    isUpdatingTask,
     createTask,
-    isCreating,
+    isCreatingTask,
   } = useTasks(project.id)
 
   const handleEditTask = async (taskId: string, newName: string) => {

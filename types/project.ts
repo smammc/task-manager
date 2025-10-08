@@ -3,9 +3,9 @@ import { z } from 'zod'
 export const ProjectSchema = z.object({
   id: z.string(),
   teamId: z.string(),
-  teamName: z.string(),
+  teamName: z.string().optional(),
   ownerId: z.string(),
-  ownerName: z.string(),
+  ownerName: z.string().optional(),
   name: z.string(),
   description: z.string().optional(),
   status: z.enum(['planning', 'active', 'on_hold', 'completed', 'cancelled', 'archived']),

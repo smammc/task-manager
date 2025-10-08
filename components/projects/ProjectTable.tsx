@@ -33,7 +33,7 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({ project }) => {
     isLoading: loading,
     refetch,
     deleteTask,
-    isDeleting,
+    isDeletingTask,
   } = useTasks(project.id)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [showingSubtaskForm, setShowingSubtaskForm] = useState<Record<string, boolean>>({})

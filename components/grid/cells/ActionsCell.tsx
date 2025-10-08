@@ -11,6 +11,7 @@ export interface ActionsCellProps {
   onEdit?: (taskId: string) => Promise<void>
   onDelete?: (taskId: string) => Promise<void>
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
+
   className?: string
 }
 

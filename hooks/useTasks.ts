@@ -92,12 +92,12 @@ export function useTasks(projectId: string) {
   return {
     ...query,
     deleteTask: deleteMutation.mutateAsync,
-    isDeleting: deleteMutation.isPending,
+    isDeletingTask: deleteMutation.isPending,
     updateTask: (taskId: string, newName: string) =>
       updateMutation.mutateAsync({ taskId, newName }),
-    isUpdating: updateMutation.isPending,
+    isUpdatingTask: updateMutation.isPending,
     createTask: (name: string, parentTaskId?: string | null) =>
       createMutation.mutateAsync({ name, projectId, parentTaskId }),
-    isCreating: createMutation.isPending,
+    isCreatingTask: createMutation.isPending,
   }
 }

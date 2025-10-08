@@ -39,6 +39,6 @@ export function useProjects() {
   return {
     ...query,
     createProject: createMutation.mutateAsync,
-    isCreating: createMutation.isPending,
+    isCreatingProject: createMutation.isPending,
   }
 }
