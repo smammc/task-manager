@@ -20,6 +20,14 @@ async function createProject(
   if (!data.success) throw new Error(data.error || 'Failed to create project')
 }
 
+async function deleteProject(projectId: string): Promise<void> {
+  const res = await fetch(`/api/projects/${projectId}`, {
+    method: 'DELETE',
+  })
+  const data = await res.json()
+  if (!data.success) throw new Error(data.error || 'Failed to delete project')
+}
+
 export function useProjects() {
   const queryClient = useQueryClient()
 
@@ -36,9 +44,18 @@ export function useProjects() {
     },
   })
 
+  const deleteMutation = useMutation({
+    mutationFn: deleteProject,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+
   return {
     ...query,
     createProject: createMutation.mutateAsync,
     isCreatingProject: createMutation.isPending,
+    deleteProject: deleteMutation.mutateAsync,
+    isDeletingProject: deleteMutation.isPending,
   }
 }

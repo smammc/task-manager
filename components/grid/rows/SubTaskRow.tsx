@@ -12,6 +12,7 @@ export interface SubTaskRowProps {
   editingTaskId?: string | null
   onSaveEdit?: (taskId: string, newName: string) => Promise<void>
   onCancelEdit?: () => void
+  onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
   className?: string
 }
 
@@ -23,6 +24,7 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
   editingTaskId,
   onSaveEdit,
   onCancelEdit,
+  onTaskStatusChange,
   className = '',
 }) => {
   const baseClasses = 'border-b border-gray-200 hover:bg-gray-50 transition-colors group'
@@ -31,11 +33,13 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
     <tr className={`${baseClasses} ${className}`}>
       <TaskNameCell
         name={task.name}
+        taskId={task.id}
         level={level}
         hasSubtasks={false}
         isEditing={editingTaskId === task.id}
         onSave={(newName) => onSaveEdit?.(task.id, newName)}
         onCancel={onCancelEdit}
+        onTaskStatusChange={onTaskStatusChange}
       />
       {/* Empty cell for progress column alignment */}
       <td className="w-[200px] px-6 py-5"></td>

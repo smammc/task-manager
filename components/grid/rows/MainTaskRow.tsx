@@ -22,6 +22,7 @@ export interface MainTaskRowProps {
   onSaveEdit?: (taskId: string, newName: string) => Promise<void>
   onCancelEdit?: () => void
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
+  onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
   className?: string
 }
 
@@ -36,6 +37,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   onSaveEdit,
   onCancelEdit,
   onAddTask,
+  onTaskStatusChange,
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -53,6 +55,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
       <tr className={`${baseClasses} ${className}`}>
         <TaskNameCell
           name={task.name}
+          taskId={task.id}
           level={level}
           hasSubtasks={hasSubtasks}
           isExpanded={isExpanded}
@@ -60,6 +63,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           isEditing={editingTaskId === task.id}
           onSave={(newName) => onSaveEdit?.(task.id, newName)}
           onCancel={onCancelEdit}
+          onTaskStatusChange={onTaskStatusChange}
         />
         <ProgressCell
           completed={task.completedCount || 0}

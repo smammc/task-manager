@@ -1,7 +1,7 @@
 // Grid header with project details
 import React from 'react'
 import { Project } from '@/types/project'
-import { Plus } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 
 export interface GridHeaderProps {
   project: Project
@@ -9,6 +9,7 @@ export interface GridHeaderProps {
   completedCount?: number
   className?: string
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
+  onDeleteProject?: (projectId: string) => Promise<void>
 }
 
 const GridHeader: React.FC<GridHeaderProps> = ({
@@ -16,6 +17,7 @@ const GridHeader: React.FC<GridHeaderProps> = ({
   taskCount = 0,
   completedCount = 0,
   onAddTask,
+  onDeleteProject,
   className = '',
 }) => {
   const [showAddTask, setShowAddTask] = React.useState(false)
@@ -44,6 +46,17 @@ const GridHeader: React.FC<GridHeaderProps> = ({
     }
   }
 
+  const handleDeleteProject = async () => {
+    if (confirm('Are you sure you want to delete this project? This action cannot be undone.')) {
+      try {
+        await onDeleteProject?.(project.id)
+      } catch (error) {
+        console.error('Error deleting project:', error)
+        alert('Failed to delete project. Please try again.')
+      }
+    }
+  }
+
   return (
     <div className={`border-b border-gray-200 bg-white px-6 py-4 ${className}`}>
       <div className="flex items-center justify-between">
@@ -62,6 +75,15 @@ const GridHeader: React.FC<GridHeaderProps> = ({
                 title="Add main task"
               >
                 <Plus className="h-4 w-4" />
+              </button>
+            )}
+            {onDeleteProject && (
+              <button
+                onClick={handleDeleteProject}
+                className="rounded p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                title="Delete project"
+              >
+                <Trash2 className="h-4 w-4" />
               </button>
             )}
           </div>

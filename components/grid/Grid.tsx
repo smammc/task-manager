@@ -16,6 +16,8 @@ export interface GridProps {
   onSaveEdit?: (taskId: string, newName: string) => Promise<void>
   onCancelEdit?: () => void
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
+  onDeleteProject?: (projectId: string) => Promise<void>
+  onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
   className?: string
 }
 
@@ -28,6 +30,8 @@ const Grid: React.FC<GridProps> = ({
   onSaveEdit,
   onCancelEdit,
   onAddTask,
+  onDeleteProject,
+  onTaskStatusChange,
   className = '',
 }) => {
   const [sortColumn, setSortColumn] = useState<string>('')
@@ -122,6 +126,7 @@ const Grid: React.FC<GridProps> = ({
         taskCount={tasks.length}
         completedCount={completedCount}
         onAddTask={onAddTask}
+        onDeleteProject={onDeleteProject}
       />
 
       <div className="overflow-x-auto">
@@ -163,6 +168,7 @@ const Grid: React.FC<GridProps> = ({
                                 editingTaskId={editingTaskId}
                                 onSaveEdit={onSaveEdit}
                                 onCancelEdit={onCancelEdit}
+                                onTaskStatusChange={onTaskStatusChange}
                               />
                             ))}
                           </tbody>
@@ -175,6 +181,7 @@ const Grid: React.FC<GridProps> = ({
                     onSaveEdit={onSaveEdit}
                     onCancelEdit={onCancelEdit}
                     onAddTask={onAddTask}
+                    onTaskStatusChange={onTaskStatusChange}
                   />
                 )
               })

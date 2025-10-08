@@ -1,33 +1,18 @@
 'use client'
 
 import { useProjects } from '@/hooks/useProjects'
-import { Button } from '@/components/ui/Button'
-import { CreateProjectDrawer } from '@/components/projects/CreateProjectDrawer'
 import React, { useState } from 'react'
-import { useAuth } from '@/hooks/useAuth'
-import { Project } from '@/types/project'
-import { ProjectTable } from '@/components/projects/ProjectTable'
+import { ProjectGrid } from '@/components/grid/ProjectGrid'
+import { CreateProjectModal } from '@/components/projects/CreateProjectModal'
+import { Plus } from 'lucide-react'
+import { useUser } from '@/hooks/useUser'
 
 export default function ProjectsPage() {
-  const { data: projects, isLoading, isError, error, refetch } = useProjects()
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const [editProject, setEditProject] = useState<Project | null>(null as Project | null)
-  const { user: currentUser } = useAuth()
+  const { data: projects, isLoading, isError, error, createProject, deleteProject } = useProjects()
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const { user } = useUser()
 
-  const handleEdit = (project: Project) => {
-    setEditProject(project)
-    setDrawerOpen(true)
-  }
-
-  const handleDelete = async (project: Project) => {
-    if (
-      !window.confirm('Are you sure you want to delete this project? This action cannot be undone.')
-    )
-      return
-    await fetch(`/api/projects/${project.id}`, { method: 'DELETE' })
-    await refetch()
-  }
-
+  const handleSuccess = async () => {}
   return (
     <div>
       <h1 className="mb-2 text-3xl font-bold text-gray-900">Ongoing Projects</h1>
@@ -35,9 +20,13 @@ export default function ProjectsPage() {
 
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-xl font-semibold">Projects List</h2>
-        <Button className="text-sm" onClick={() => setDrawerOpen(true)}>
-          Add Project
-        </Button>
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-green-700"
+        >
+          <Plus className="h-4 w-4" />
+          New Project
+        </button>
       </div>
 
       {isLoading ? (
@@ -45,19 +34,30 @@ export default function ProjectsPage() {
       ) : isError ? (
         <div className="text-sm text-red-500">{error?.message || 'Failed to load projects'}</div>
       ) : projects && projects.length > 0 ? (
-        projects.map((project) => <ProjectTable key={project.id} project={project} />)
+        projects.map((project) => (
+          <div key={project.id} className="mb-8">
+            <ProjectGrid project={project} deleteProject={deleteProject} />
+          </div>
+        ))
       ) : (
-        <div className="text-sm text-gray-400">No ongoing projects found.</div>
+        <div className="rounded-lg border-2 border-dashed border-gray-300 p-12 text-center">
+          <p className="mb-4 text-sm text-gray-500">No ongoing projects found.</p>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700"
+          >
+            <Plus className="h-4 w-4" />
+            Create your first project
+          </button>
+        </div>
       )}
 
-      <CreateProjectDrawer
-        open={drawerOpen}
-        onClose={() => {
-          setDrawerOpen(false)
-          setEditProject(null)
-        }}
-        onSuccess={refetch}
-        project={editProject}
+      <CreateProjectModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleSuccess}
+        createProject={createProject}
+        userId={user ? user.id : ''}
       />
     </div>
   )

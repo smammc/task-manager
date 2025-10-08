@@ -7,9 +7,10 @@ import { useState } from 'react'
 
 interface ProjectGridProps {
   project: Project
+  deleteProject?: (projectId: string) => Promise<void>
 }
 
-export function ProjectGrid({ project }: ProjectGridProps) {
+export function ProjectGrid({ project, deleteProject }: ProjectGridProps) {
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const {
     data: tasks = [],
@@ -21,6 +22,8 @@ export function ProjectGrid({ project }: ProjectGridProps) {
     isUpdatingTask,
     createTask,
     isCreatingTask,
+    updateTaskStatus,
+    isUpdatingTaskStatus,
   } = useTasks(project.id)
 
   const handleEditTask = async (taskId: string, newName: string) => {
@@ -50,6 +53,10 @@ export function ProjectGrid({ project }: ProjectGridProps) {
       onSaveEdit={handleEditTask}
       onCancelEdit={() => setEditingTaskId(null)}
       onAddTask={(name: string, parentTaskId: string) => createTask(name, parentTaskId)}
+      onDeleteProject={deleteProject}
+      onTaskStatusChange={(taskId: string, newStatus: string) =>
+        updateTaskStatus(taskId, newStatus)
+      }
     />
   )
 }

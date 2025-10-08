@@ -29,6 +29,16 @@ async function updateTask(taskId: string, newName: string): Promise<void> {
   if (!data.success) throw new Error(data.error || 'Failed to update task')
 }
 
+async function updateTaskStatus(taskId: string, status: string): Promise<void> {
+  const res = await fetch('/api/tasks', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: taskId, status: status }),
+  })
+  const data = await res.json()
+  if (!data.success) throw new Error(data.error || 'Failed to update task status')
+}
+
 async function createTask(
   name: string,
   projectId: string,
@@ -74,6 +84,14 @@ export function useTasks(projectId: string) {
     },
   })
 
+  const updateStatusMutation = useMutation({
+    mutationFn: ({ taskId, status }: { taskId: string; status: string }) =>
+      updateTaskStatus(taskId, status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
+    },
+  })
+
   const createMutation = useMutation({
     mutationFn: ({
       name,
@@ -96,6 +114,9 @@ export function useTasks(projectId: string) {
     updateTask: (taskId: string, newName: string) =>
       updateMutation.mutateAsync({ taskId, newName }),
     isUpdatingTask: updateMutation.isPending,
+    updateTaskStatus: (taskId: string, status: string) =>
+      updateStatusMutation.mutateAsync({ taskId, status }),
+    isUpdatingTaskStatus: updateStatusMutation.isPending,
     createTask: (name: string, parentTaskId?: string | null) =>
       createMutation.mutateAsync({ name, projectId, parentTaskId }),
     isCreatingTask: createMutation.isPending,

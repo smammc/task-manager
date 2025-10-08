@@ -4,6 +4,7 @@ import { ChevronRight, ChevronDown } from 'lucide-react'
 
 export interface TaskNameCellProps {
   name: string
+  taskId: string
   level?: number
   hasSubtasks?: boolean
   isExpanded?: boolean
@@ -11,11 +12,17 @@ export interface TaskNameCellProps {
   isEditing?: boolean
   onSave?: (newName: string) => void
   onCancel?: () => void
+  status?: 'Not Started' | 'In Progress' | 'Completed'
+  onTaskStatusChange?: (
+    taskId: string,
+    newStatus: 'Not Started' | 'In Progress' | 'Completed',
+  ) => void
   className?: string
 }
 
 const TaskNameCell: React.FC<TaskNameCellProps> = ({
   name,
+  taskId,
   level = 0,
   hasSubtasks = false,
   isExpanded = false,
@@ -23,10 +30,27 @@ const TaskNameCell: React.FC<TaskNameCellProps> = ({
   isEditing = false,
   onSave,
   onCancel,
+  status = 'Not Started',
+  onTaskStatusChange,
   className = '',
 }) => {
   const [editValue, setEditValue] = useState(name)
+  const [previousStatus, setPreviousStatus] = useState<'Not Started' | 'In Progress'>(
+    status === 'Completed' ? 'Not Started' : (status as 'Not Started' | 'In Progress'),
+  )
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (status !== 'Completed') {
+      setPreviousStatus(status as 'Not Started' | 'In Progress')
+    }
+  }, [status])
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    const newStatus = e.target.checked ? 'Completed' : previousStatus
+    onTaskStatusChange?.(taskId, newStatus)
+  }
 
   useEffect(() => {
     if (isEditing) {
@@ -56,6 +80,13 @@ const TaskNameCell: React.FC<TaskNameCellProps> = ({
   return (
     <td className={`px-4 py-3 text-sm text-gray-900 ${className}`} style={indentationStyle}>
       <div className="flex items-center gap-2">
+        {/* Checkbox */}
+        <input
+          type="checkbox"
+          checked={status === 'Completed'}
+          onChange={handleCheckboxChange}
+          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+        />
         {hasSubtasks && (
           <button
             onClick={(e) => {
