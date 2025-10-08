@@ -1,20 +1,25 @@
 // Grid header with project details
 import React from 'react'
 import { Project } from '@/types/project'
+import { Plus } from 'lucide-react'
 
 export interface GridHeaderProps {
   project: Project
   taskCount?: number
   completedCount?: number
   className?: string
+  onAddTask?: (name: string, parentTaskId: string) => Promise<void>
 }
 
 const GridHeader: React.FC<GridHeaderProps> = ({
   project,
   taskCount = 0,
   completedCount = 0,
+  onAddTask,
   className = '',
 }) => {
+  const [showAddTask, setShowAddTask] = React.useState(false)
+  const [taskName, setTaskName] = React.useState('')
   const completionPercentage = taskCount > 0 ? Math.round((completedCount / taskCount) * 100) : 0
 
   const statusColors = {
@@ -24,6 +29,19 @@ const GridHeader: React.FC<GridHeaderProps> = ({
     completed: 'bg-blue-100 text-blue-700 border-blue-300',
     cancelled: 'bg-red-100 text-red-700 border-red-300',
     archived: 'bg-gray-100 text-gray-700 border-gray-300',
+  }
+
+  const handleAddTask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!taskName.trim()) return
+
+    try {
+      await onAddTask?.(taskName.trim(), '')
+      setTaskName('')
+      setShowAddTask(false)
+    } catch (error) {
+      console.error('Error creating main task:', error)
+    }
   }
 
   return (
@@ -37,7 +55,46 @@ const GridHeader: React.FC<GridHeaderProps> = ({
             >
               {project.status.replace('_', ' ').toUpperCase()}
             </span>
+            {onAddTask && !showAddTask && (
+              <button
+                onClick={() => setShowAddTask(true)}
+                className="rounded p-1.5 text-gray-400 transition-colors hover:bg-green-50 hover:text-green-600"
+                title="Add main task"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            )}
           </div>
+
+          {showAddTask && (
+            <form onSubmit={handleAddTask} className="mb-3 flex items-center gap-2">
+              <input
+                type="text"
+                value={taskName}
+                onChange={(e) => setTaskName(e.target.value)}
+                placeholder="Main task name"
+                className="rounded border border-gray-300 px-3 py-1.5 text-sm focus:border-blue-500 focus:outline-none"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="rounded bg-green-600 px-3 py-1.5 text-sm text-white hover:bg-green-700"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddTask(false)
+                  setTaskName('')
+                }}
+                className="rounded bg-gray-300 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </form>
+          )}
+
           {project.description && (
             <p className="mb-3 text-sm text-gray-600">{project.description}</p>
           )}

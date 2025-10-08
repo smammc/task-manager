@@ -29,6 +29,26 @@ async function updateTask(taskId: string, newName: string): Promise<void> {
   if (!data.success) throw new Error(data.error || 'Failed to update task')
 }
 
+async function createTask(
+  name: string,
+  projectId: string,
+  parentTaskId?: string | null,
+  status: 'Not Started' | 'In Progress' | 'Completed' = 'Not Started',
+): Promise<void> {
+  const res = await fetch('/api/tasks', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: name,
+      projectId: projectId,
+      parentTaskId: parentTaskId || null,
+      status: status,
+    }),
+  })
+  const body = await res.json()
+  if (!body.success) throw new Error(body.error || 'Failed to create task')
+}
+
 export function useTasks(projectId: string) {
   const queryClient = useQueryClient()
 
@@ -54,6 +74,21 @@ export function useTasks(projectId: string) {
     },
   })
 
+  const createMutation = useMutation({
+    mutationFn: ({
+      name,
+      projectId,
+      parentTaskId,
+    }: {
+      name: string
+      projectId: string
+      parentTaskId?: string | null
+    }) => createTask(name, projectId, parentTaskId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
+    },
+  })
+
   return {
     ...query,
     deleteTask: deleteMutation.mutateAsync,
@@ -61,5 +96,8 @@ export function useTasks(projectId: string) {
     updateTask: (taskId: string, newName: string) =>
       updateMutation.mutateAsync({ taskId, newName }),
     isUpdating: updateMutation.isPending,
+    createTask: (name: string, parentTaskId?: string | null) =>
+      createMutation.mutateAsync({ name, projectId, parentTaskId }),
+    isCreating: createMutation.isPending,
   }
 }

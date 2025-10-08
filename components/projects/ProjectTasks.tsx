@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Edit2, Trash2, ListTree } from 'lucide-react'
-import { Task } from '@/types/project'
+import { Task } from '@/types/Task'
 import { SegmentedProgress } from './SegmentedProgress'
 import { CreateTaskDrawer } from '@/components/tasks/CreateTaskDrawer'
 

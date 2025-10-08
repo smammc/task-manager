@@ -19,6 +19,8 @@ export function ProjectGrid({ project }: ProjectGridProps) {
     isDeleting,
     updateTask,
     isUpdating,
+    createTask,
+    isCreating,
   } = useTasks(project.id)
 
   const handleEditTask = async (taskId: string, newName: string) => {
@@ -31,9 +33,9 @@ export function ProjectGrid({ project }: ProjectGridProps) {
     }
   }
 
-  if (loading) {
+  /*  if (loading) {
     return <div className="text-sm text-gray-400">Loading tasks...</div>
-  }
+  }*/
 
   return (
     <Grid
@@ -47,6 +49,7 @@ export function ProjectGrid({ project }: ProjectGridProps) {
       editingTaskId={editingTaskId}
       onSaveEdit={handleEditTask}
       onCancelEdit={() => setEditingTaskId(null)}
+      onAddTask={(name: string, parentTaskId: string) => createTask(name, parentTaskId)}
     />
   )
 }

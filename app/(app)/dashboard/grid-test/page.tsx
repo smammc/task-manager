@@ -5,7 +5,7 @@ import React from 'react'
 import { ProjectGrid } from '@/components/grid/ProjectGrid'
 
 export default function GridPage() {
-  const { data: projects, isLoading, isError, error } = useProjects()
+  const { data: projects, isLoading, isError, error, createProject } = useProjects()
 
   return (
     <div>

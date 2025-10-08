@@ -21,6 +21,7 @@ export interface MainTaskRowProps {
   editingTaskId?: string | null
   onSaveEdit?: (taskId: string, newName: string) => Promise<void>
   onCancelEdit?: () => void
+  onAddTask?: (name: string, parentTaskId: string) => Promise<void>
   className?: string
 }
 
@@ -34,6 +35,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   editingTaskId,
   onSaveEdit,
   onCancelEdit,
+  onAddTask,
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -70,9 +72,10 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
         <ActionsCell
           taskId={task.id}
           taskName={task.name}
-          //projectName={task.projectName}
+          projectId={task.projectId}
           onEdit={onEdit}
           onDelete={onDelete}
+          onAddTask={onAddTask}
         />
       </tr>
       {hasSubtasks && isExpanded && subtasks && (

@@ -15,7 +15,9 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json()
     // Zod validation
-    const validatedTask = TaskSchema.omit({ id: true }).parse(body)
+    const validatedTask = TaskSchema.omit({ id: true, createdAt: true, updatedAt: true }).parse(
+      body,
+    )
 
     // Check if project exists
     const projectResult = await databaseConfig.query('SELECT id FROM projects WHERE id = $1', [
