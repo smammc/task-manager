@@ -44,7 +44,7 @@ const Grid: React.FC<GridProps> = ({
     { key: 'dueDate', label: 'Due Date', sortable: false, align: 'center' },
     { key: 'priority', label: 'Priority', sortable: false, align: 'center' },
     { key: 'actions', label: 'Actions', sortable: false, align: 'center' },
-    { key: 'progress', label: 'Progress', sortable: false, align: 'center' },
+    // { key: 'progress', label: 'Progress', sortable: false, align: 'center' },
   ]
 
   // Handle sorting
@@ -131,6 +131,13 @@ const Grid: React.FC<GridProps> = ({
 
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
+          <colgroup>
+            <col style={{ width: '25%' }} /> {/* Task Name */}
+            <col style={{ width: '15%' }} /> {/* Status */}
+            <col style={{ width: '15%' }} /> {/* Due Date */}
+            <col style={{ width: '15%' }} /> {/* Priority */}
+            <col style={{ width: '15%' }} /> {/* Actions */}
+          </colgroup>
           <ColumnsRow
             columns={columns}
             sortColumn={sortColumn}
@@ -140,7 +147,7 @@ const Grid: React.FC<GridProps> = ({
           <tbody className="divide-y divide-gray-200 bg-white">
             {sortedMainTasks.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                   No tasks found. Create your first task to get started.
                 </td>
               </tr>
@@ -157,6 +164,13 @@ const Grid: React.FC<GridProps> = ({
                     subtasks={
                       hasSubtasks ? (
                         <table className="min-w-full">
+                          <colgroup>
+                            <col style={{ width: '25%' }} /> {/* Task Name */}
+                            <col style={{ width: '15%' }} /> {/* Status */}
+                            <col style={{ width: '15%' }} /> {/* Due Date */}
+                            <col style={{ width: '15%' }} /> {/* Priority */}
+                            <col style={{ width: '15%' }} /> {/* Actions */}
+                          </colgroup>
                           <tbody>
                             {subtasks.map((subtask) => (
                               <SubTaskRow

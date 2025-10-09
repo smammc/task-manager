@@ -1,14 +1,7 @@
 // Main task row component
 import React, { useState } from 'react'
 import { Task } from '@/types/task'
-import {
-  TaskNameCell,
-  ProgressCell,
-  StatusCell,
-  DueDateCell,
-  PriorityCell,
-  ActionsCell,
-} from '../cells'
+import { TaskNameCell, StatusCell, DueDateCell, PriorityCell, ActionsCell } from '../cells'
 import type { Priority } from '../types'
 
 export interface MainTaskRowProps {
@@ -65,7 +58,6 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           onCancel={onCancelEdit}
           onTaskStatusChange={onTaskStatusChange}
         />
-        <ProgressCell completed={task.completedCount || 0} total={task.totalCount || 0} />
         <StatusCell status={task.status} />
         <DueDateCell dueDate={task.deadline} />
         <PriorityCell priority={task.categoryId as Priority} />
@@ -80,7 +72,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
       </tr>
       {hasSubtasks && isExpanded && subtasks && (
         <tr className="bg-gray-50">
-          <td colSpan={6} className="p-0">
+          <td colSpan={5} className="p-0">
             {subtasks}
           </td>
         </tr>

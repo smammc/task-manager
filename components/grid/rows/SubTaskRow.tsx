@@ -42,9 +42,6 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
         onCancel={onCancelEdit}
         onTaskStatusChange={onTaskStatusChange}
       />
-      {/* Empty cell for progress column alignment */}
-      {/*<td className="px-4 py-3"></td>*/}
-      <ProgressCell completed={0} total={0} />
       <StatusCell status={task.status} />
       <DueDateCell dueDate={task.deadline} />
       <PriorityCell priority={task.categoryId as Priority} />
