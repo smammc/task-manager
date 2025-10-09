@@ -65,11 +65,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           onCancel={onCancelEdit}
           onTaskStatusChange={onTaskStatusChange}
         />
-        <ProgressCell
-          completed={task.completedCount || 0}
-          total={task.totalCount || 0}
-          className={'w-[200px]'}
-        />
+        <ProgressCell completed={task.completedCount || 0} total={task.totalCount || 0} />
         <StatusCell status={task.status} />
         <DueDateCell dueDate={task.deadline} />
         <PriorityCell priority={task.categoryId as Priority} />

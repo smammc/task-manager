@@ -81,12 +81,12 @@ const TaskNameCell: React.FC<TaskNameCellProps> = ({
     <td className={`px-4 py-3 text-sm text-gray-900 ${className}`} style={indentationStyle}>
       <div className="flex items-center gap-2">
         {/* Checkbox */}
-        <input
+        {/*<input
           type="checkbox"
           checked={status === 'Completed'}
           onChange={handleCheckboxChange}
           className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-        />
+        />*/}
         {hasSubtasks && (
           <button
             onClick={(e) => {

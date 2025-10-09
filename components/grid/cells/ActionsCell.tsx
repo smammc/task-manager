@@ -44,7 +44,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({
 
   if (showAddSubtask) {
     return (
-      <td className={`px-4 py-3 text-sm ${className}`}>
+      <td className={`px-4 py-3 text-sm text-center ${className}`}>
         <form onSubmit={handleAddSubtask} className="flex items-center gap-1">
           <input
             type="text"
@@ -76,7 +76,7 @@ const ActionsCell: React.FC<ActionsCellProps> = ({
   }
 
   return (
-    <td className={`px-4 py-3 text-sm ${className}`}>
+    <td className={`px-4 py-3 text-sm text-center ${className}`}>
       <div className="relative flex items-center justify-center gap-1">
         <div className="flex items-center gap-1">
           <TimerButton taskId={taskId} taskName={taskName} projectName={projectName} />

@@ -21,7 +21,7 @@ const StatusCell: React.FC<StatusCellProps> = ({ status, className = '' }) => {
   }
 
   return (
-    <td className={`px-4 py-3 text-sm ${className}`}>
+    <td className={`px-4 py-3 text-center text-sm ${className}`}>
       <span
         className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusStyles[validatedStatus]}`}
       >

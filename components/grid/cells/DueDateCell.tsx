@@ -14,7 +14,9 @@ const DueDateCell: React.FC<DueDateCellProps> = ({ dueDate, className = '' }) =>
   const validatedDate = DateSchema.parse(dueDate)
 
   if (!validatedDate) {
-    return <td className={`px-4 py-3 text-sm text-gray-400 ${className}`}>No deadline</td>
+    return (
+      <td className={`px-4 py-3 text-center text-sm text-gray-400 ${className}`}>No deadline</td>
+    )
   }
 
   const date = new Date(validatedDate)
@@ -47,7 +49,7 @@ const DueDateCell: React.FC<DueDateCellProps> = ({ dueDate, className = '' }) =>
   }
 
   return (
-    <td className={`px-4 py-3 text-sm ${getDateColor()} ${className}`}>
+    <td className={`px-4 py-3 text-center text-sm ${getDateColor()} ${className}`}>
       <div className="flex items-center gap-1">
         {isOverdue && <span className="text-red-500">⚠</span>}
         <span className="font-medium">{getDateLabel()}</span>

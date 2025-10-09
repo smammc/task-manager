@@ -16,7 +16,7 @@ const PriorityCell: React.FC<PriorityCellProps> = ({ priority, className = '' })
 
   if (!validatedPriority) {
     return (
-      <td className={`px-4 py-3 text-sm text-gray-400 ${className}`}>
+      <td className={`px-4 py-3 text-center text-sm text-gray-400 ${className}`}>
         <span className="inline-flex items-center gap-1">
           <span className="h-2 w-2 rounded-full bg-gray-300"></span>
           None
@@ -51,7 +51,7 @@ const PriorityCell: React.FC<PriorityCellProps> = ({ priority, className = '' })
   const config = priorityConfig[validatedPriority]
 
   return (
-    <td className={`px-4 py-3 text-sm ${className}`}>
+    <td className={`px-4 py-3 text-center text-sm ${className}`}>
       <span className={`inline-flex items-center gap-1.5 ${config.textColor}`}>
         <span className={`h-2 w-2 rounded-full ${config.color}`}></span>
         <span className="font-medium">{config.label}</span>

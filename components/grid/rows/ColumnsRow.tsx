@@ -39,7 +39,7 @@ const ColumnsRow: React.FC<ColumnsRowProps> = ({
             sortable={column.sortable}
             sortDirection={sortColumn === column.key ? sortDirection : null}
             onSort={() => handleSort(column.key)}
-            align={column.align || 'left'}
+            align={column.align}
           >
             {column.label}
           </ColumnHeader>

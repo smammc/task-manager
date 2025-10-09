@@ -8,7 +8,7 @@ export interface CellProps {
   align?: 'left' | 'center' | 'right'
 }
 
-const Cell: React.FC<CellProps> = ({ children, className = '', align = 'left' }) => {
+const Cell: React.FC<CellProps> = ({ children, className = '', align = 'center' }) => {
   const alignmentClasses = {
     left: 'text-left',
     center: 'text-center',

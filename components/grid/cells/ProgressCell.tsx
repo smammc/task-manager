@@ -28,7 +28,7 @@ const ProgressCell: React.FC<ProgressCellProps> = ({ completed, total, className
   }
 
   return (
-    <td className={`px-4 py-3 text-sm ${className}`}>
+    <td className={`px-4 py-3 text-center text-sm ${className}`}>
       <div className="flex items-center gap-3">
         <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200">
           <div

@@ -3,6 +3,7 @@ import React from 'react'
 import { Task } from '@/types/task'
 import { TaskNameCell, StatusCell, DueDateCell, PriorityCell, ActionsCell } from '../cells'
 import type { Priority } from '../types'
+import { ProgressCell } from '@/components/grid'
 
 export interface SubTaskRowProps {
   task: Task
@@ -42,7 +43,8 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
         onTaskStatusChange={onTaskStatusChange}
       />
       {/* Empty cell for progress column alignment */}
-      <td className="w-[200px] px-6 py-5"></td>
+      {/*<td className="px-4 py-3"></td>*/}
+      <ProgressCell completed={0} total={0} />
       <StatusCell status={task.status} />
       <DueDateCell dueDate={task.deadline} />
       <PriorityCell priority={task.categoryId as Priority} />

@@ -39,12 +39,12 @@ const Grid: React.FC<GridProps> = ({
 
   // Column configuration
   const columns: ColumnConfig[] = [
-    { key: 'name', label: 'Task Name', sortable: true, align: 'left' },
-    { key: 'progress', label: 'Progress', sortable: false, align: 'left' },
-    { key: 'status', label: 'Status', sortable: false, align: 'left' },
-    { key: 'dueDate', label: 'Due Date', sortable: false, align: 'left' },
-    { key: 'priority', label: 'Priority', sortable: false, align: 'left' },
+    { key: 'name', label: 'Task Name', sortable: true, align: 'center' },
+    { key: 'status', label: 'Status', sortable: false, align: 'center' },
+    { key: 'dueDate', label: 'Due Date', sortable: false, align: 'center' },
+    { key: 'priority', label: 'Priority', sortable: false, align: 'center' },
     { key: 'actions', label: 'Actions', sortable: false, align: 'center' },
+    { key: 'progress', label: 'Progress', sortable: false, align: 'center' },
   ]
 
   // Handle sorting
