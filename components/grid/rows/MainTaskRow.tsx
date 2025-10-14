@@ -36,10 +36,26 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [showAddSubtask, setShowAddSubtask] = useState(false)
+  const [subtaskName, setSubtaskName] = useState('')
 
   const handleToggle = () => {
     if (hasSubtasks) {
       setIsExpanded(!isExpanded)
+    }
+  }
+
+  const handleAddSubtask = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!subtaskName.trim()) return
+
+    try {
+      await onAddTask?.(subtaskName.trim(), task.id)
+      setSubtaskName('')
+      setShowAddSubtask(false)
+      setIsExpanded(true) // Expand to show new subtask
+    } catch (error) {
+      console.error('Error creating subtask:', error)
     }
   }
 
@@ -61,7 +77,11 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           onTaskStatusChange={onTaskStatusChange}
         />
         <StatusCell status={task.status} taskId={task.id} onStatusChange={onTaskStatusChange} />
-        <DueDateCell taskId={task.id} dueDate={task.deadline} onDueDateChange={onTaskDueDateChange} />
+        <DueDateCell
+          taskId={task.id}
+          dueDate={task.deadline}
+          onDueDateChange={onTaskDueDateChange}
+        />
         <PriorityCell priority={task.categoryId as Priority} />
         <ActionsCell
           taskId={task.id}
@@ -69,13 +89,49 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           projectId={task.projectId}
           onEdit={onEdit}
           onDelete={onDelete}
-          onAddTask={onAddTask}
+          onAddTask={onAddTask ? () => setShowAddSubtask(true) : undefined}
         />
       </tr>
       {hasSubtasks && isExpanded && subtasks && (
         <tr className="bg-gray-50">
           <td colSpan={5} className="p-0">
             {subtasks}
+          </td>
+        </tr>
+      )}
+      {showAddSubtask && (
+        <tr className="border-b border-gray-200 bg-blue-50">
+          <td colSpan={5} className="px-4 py-3">
+            <form
+              onSubmit={handleAddSubtask}
+              className="flex items-center gap-2"
+              style={{ paddingLeft: `${(level + 1) * 24}px` }}
+            >
+              <input
+                type="text"
+                value={subtaskName}
+                onChange={(e) => setSubtaskName(e.target.value)}
+                placeholder="Nome da subtarefa"
+                className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+                autoFocus
+              />
+              <button
+                type="submit"
+                className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowAddSubtask(false)
+                  setSubtaskName('')
+                }}
+                className="rounded bg-gray-300 px-4 py-2 text-sm text-gray-700 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+            </form>
           </td>
         </tr>
       )}
