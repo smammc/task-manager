@@ -18,6 +18,7 @@ export interface GridProps {
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
   onDeleteProject?: (projectId: string) => Promise<void>
   onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
+  onTaskDueDateChange?: (taskId: string, dueDate: string | null) => Promise<void>
   className?: string
 }
 
@@ -32,6 +33,7 @@ const Grid: React.FC<GridProps> = ({
   onAddTask,
   onDeleteProject,
   onTaskStatusChange,
+  onTaskDueDateChange,
   className = '',
 }) => {
   const [sortColumn, setSortColumn] = useState<string>('')
@@ -132,11 +134,11 @@ const Grid: React.FC<GridProps> = ({
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <colgroup>
-            <col style={{ width: '25%' }} /> {/* Task Name */}
-            <col style={{ width: '15%' }} /> {/* Status */}
-            <col style={{ width: '15%' }} /> {/* Due Date */}
-            <col style={{ width: '15%' }} /> {/* Priority */}
-            <col style={{ width: '15%' }} /> {/* Actions */}
+            <col style={{ width: '25%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '15%' }} />
+            <col style={{ width: '15%' }} />
           </colgroup>
           <ColumnsRow
             columns={columns}
@@ -165,11 +167,11 @@ const Grid: React.FC<GridProps> = ({
                       hasSubtasks ? (
                         <table className="min-w-full">
                           <colgroup>
-                            <col style={{ width: '25%' }} /> {/* Task Name */}
-                            <col style={{ width: '15%' }} /> {/* Status */}
-                            <col style={{ width: '15%' }} /> {/* Due Date */}
-                            <col style={{ width: '15%' }} /> {/* Priority */}
-                            <col style={{ width: '15%' }} /> {/* Actions */}
+                            <col style={{ width: '25%' }} /> 
+                            <col style={{ width: '15%' }} /> 
+                            <col style={{ width: '15%' }} /> 
+                            <col style={{ width: '15%' }} /> 
+                            <col style={{ width: '15%' }} /> 
                           </colgroup>
                           <tbody>
                             {subtasks.map((subtask) => (
@@ -183,6 +185,7 @@ const Grid: React.FC<GridProps> = ({
                                 onSaveEdit={onSaveEdit}
                                 onCancelEdit={onCancelEdit}
                                 onTaskStatusChange={onTaskStatusChange}
+                                onTaskDueDateChange={onTaskDueDateChange}
                               />
                             ))}
                           </tbody>
@@ -196,6 +199,7 @@ const Grid: React.FC<GridProps> = ({
                     onCancelEdit={onCancelEdit}
                     onAddTask={onAddTask}
                     onTaskStatusChange={onTaskStatusChange}
+                    onTaskDueDateChange={onTaskDueDateChange}
                   />
                 )
               })

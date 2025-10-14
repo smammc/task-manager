@@ -78,7 +78,7 @@ const TaskNameCell: React.FC<TaskNameCellProps> = ({
   }
 
   return (
-    <td className={`px-4 py-3 text-sm text-gray-900 ${className}`} style={indentationStyle}>
+    <td className={`px-4 py-3 text-sm text-gray-700 ${className}`} style={indentationStyle}>
       <div className="flex items-center gap-2">
         {/* Checkbox */}
         {/*<input

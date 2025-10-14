@@ -14,6 +14,7 @@ export interface SubTaskRowProps {
   onSaveEdit?: (taskId: string, newName: string) => Promise<void>
   onCancelEdit?: () => void
   onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
+  onTaskDueDateChange?: (taskId: string, dueDate: string | null) => Promise<void>
   className?: string
 }
 
@@ -26,6 +27,7 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
   onSaveEdit,
   onCancelEdit,
   onTaskStatusChange,
+  onTaskDueDateChange,
   className = '',
 }) => {
   const baseClasses = 'border-b border-gray-200 hover:bg-gray-50 transition-colors group'
@@ -33,6 +35,7 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
   return (
     <tr className={`${baseClasses} ${className}`}>
       <TaskNameCell
+        className={'text-xs'}
         name={task.name}
         taskId={task.id}
         level={level}
@@ -42,8 +45,8 @@ const SubTaskRow: React.FC<SubTaskRowProps> = ({
         onCancel={onCancelEdit}
         onTaskStatusChange={onTaskStatusChange}
       />
-      <StatusCell status={task.status} />
-      <DueDateCell dueDate={task.deadline} />
+      <StatusCell status={task.status} taskId={task.id} onStatusChange={onTaskStatusChange} />
+      <DueDateCell taskId={task.id} dueDate={task.deadline} onDueDateChange={onTaskDueDateChange} />
       <PriorityCell priority={task.categoryId as Priority} />
       <ActionsCell
         taskId={task.id}

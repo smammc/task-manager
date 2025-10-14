@@ -16,6 +16,7 @@ export interface MainTaskRowProps {
   onCancelEdit?: () => void
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
   onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
+  onTaskDueDateChange?: (taskId: string, dueDate: string | null) => Promise<void>
   className?: string
 }
 
@@ -31,6 +32,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   onCancelEdit,
   onAddTask,
   onTaskStatusChange,
+  onTaskDueDateChange,
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -58,8 +60,8 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           onCancel={onCancelEdit}
           onTaskStatusChange={onTaskStatusChange}
         />
-        <StatusCell status={task.status} />
-        <DueDateCell dueDate={task.deadline} />
+        <StatusCell status={task.status} taskId={task.id} onStatusChange={onTaskStatusChange} />
+        <DueDateCell taskId={task.id} dueDate={task.deadline} onDueDateChange={onTaskDueDateChange} />
         <PriorityCell priority={task.categoryId as Priority} />
         <ActionsCell
           taskId={task.id}
