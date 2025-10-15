@@ -2,11 +2,23 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Task } from '@/types/task'
 import { mapApiTask } from '@/lib/tasks'
 
+interface TimeSpentMap {
+  [taskId: string]: number
+}
+
 async function fetchTasks(projectId: string): Promise<Task[]> {
   const res = await fetch(`/api/tasks?projectId=${projectId}`)
   const data = await res.json()
   if (!data.success) throw new Error('Failed to fetch tasks')
   return (data.tasks || []).map(mapApiTask)
+}
+
+async function fetchTasksTimeSpent(projectId: string): Promise<TimeSpentMap> {
+  const response = await fetch(`/api/projects/${projectId}/time-spent`)
+  if (!response.ok) {
+    throw new Error('Failed to fetch time spent data')
+  }
+  return response.json()
 }
 
 async function deleteTask(taskId: string): Promise<void> {
@@ -49,6 +61,16 @@ async function updateTaskDueDate(taskId: string, dueDate: string | null): Promis
   if (!data.success) throw new Error(data.error || 'Failed to update task due date')
 }
 
+async function updateTaskPriority(taskId: string, priority: string | null): Promise<void> {
+  const res = await fetch('/api/tasks', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id: taskId, priority: priority }),
+  })
+  const data = await res.json()
+  if (!data.success) throw new Error(data.error || 'Failed to update task priority')
+}
+
 async function createTask(
   name: string,
   projectId: string,
@@ -79,11 +101,21 @@ export function useTasks(projectId: string) {
     staleTime: 5 * 60 * 1000,
   })
 
+  const timeSpentQuery = useQuery<TimeSpentMap, Error>({
+    queryKey: ['tasks-time-spent', projectId],
+    queryFn: () => fetchTasksTimeSpent(projectId),
+    enabled: !!projectId,
+    staleTime: 30000,
+  })
+
+  const invalidateQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
+    queryClient.invalidateQueries({ queryKey: ['tasks-time-spent', projectId] })
+  }
+
   const deleteMutation = useMutation({
     mutationFn: deleteTask,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
-    },
+    onSuccess: invalidateQueries,
   })
 
   const updateMutation = useMutation({
@@ -110,6 +142,14 @@ export function useTasks(projectId: string) {
     },
   })
 
+  const updatePriorityMutation = useMutation({
+    mutationFn: ({ taskId, priority }: { taskId: string; priority: string | null }) =>
+      updateTaskPriority(taskId, priority),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
+    },
+  })
+
   const createMutation = useMutation({
     mutationFn: ({
       name,
@@ -120,13 +160,13 @@ export function useTasks(projectId: string) {
       projectId: string
       parentTaskId?: string | null
     }) => createTask(name, projectId, parentTaskId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId] })
-    },
+    onSuccess: invalidateQueries,
   })
 
   return {
     ...query,
+    timeSpentMap: timeSpentQuery.data ?? {},
+    isLoadingTimeSpent: timeSpentQuery.isLoading,
     deleteTask: deleteMutation.mutateAsync,
     isDeletingTask: deleteMutation.isPending,
     updateTask: (taskId: string, newName: string) =>
@@ -141,5 +181,8 @@ export function useTasks(projectId: string) {
     updateTaskDueDate: (taskId: string, dueDate: string | null) =>
       updateDueDateMutation.mutateAsync({ taskId, dueDate }),
     isUpdatingTaskDueDate: updateDueDateMutation.isPending,
+    updateTaskPriority: (taskId: string, priority: string | null) =>
+      updatePriorityMutation.mutateAsync({ taskId, priority }),
+    isUpdatingTaskPriority: updatePriorityMutation.isPending,
   }
 }

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { Task } from '@/types/task'
 import { TaskNameCell, StatusCell, DueDateCell, PriorityCell, ActionsCell } from '../cells'
 import type { Priority } from '../types'
+import { TimeSpentCell } from '@/components/grid/cells/TimeSpentCell'
 
 export interface MainTaskRowProps {
   task: Task
@@ -17,6 +18,7 @@ export interface MainTaskRowProps {
   onAddTask?: (name: string, parentTaskId: string) => Promise<void>
   onTaskStatusChange?: (taskId: string, newStatus: string) => Promise<void>
   onTaskDueDateChange?: (taskId: string, dueDate: string | null) => Promise<void>
+  timeSpent: number
   className?: string
 }
 
@@ -33,6 +35,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
   onAddTask,
   onTaskStatusChange,
   onTaskDueDateChange,
+  timeSpent,
   className = '',
 }) => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -82,7 +85,8 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
           dueDate={task.deadline}
           onDueDateChange={onTaskDueDateChange}
         />
-        <PriorityCell priority={task.categoryId as Priority} />
+        {/*<PriorityCell priority={task.categoryId as Priority} />*/}
+        <TimeSpentCell seconds={timeSpent} />
         <ActionsCell
           taskId={task.id}
           taskName={task.name}
@@ -111,7 +115,7 @@ const MainTaskRow: React.FC<MainTaskRowProps> = ({
                 type="text"
                 value={subtaskName}
                 onChange={(e) => setSubtaskName(e.target.value)}
-                placeholder="Nome da subtarefa"
+                placeholder="Name"
                 className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
                 autoFocus
               />

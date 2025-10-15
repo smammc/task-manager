@@ -115,7 +115,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {!isCollapsed && (
               <div className="min-w-0 flex-1">
                 <div className="truncate font-medium text-gray-900">{user.name}</div>
-                <div className="truncate text-xs text-gray-500">{user.email}</div>
+                <div className="truncate text-[10px] text-gray-500">{user.email}</div>
               </div>
             )}
             <button

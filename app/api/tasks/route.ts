@@ -28,9 +28,9 @@ export async function POST(request: NextRequest) {
     }
     // Insert new task
     const insertResult = await databaseConfig.query(
-      `INSERT INTO tasks (id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date)
+      `INSERT INTO tasks (id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, priority)
        VALUES (gen_random_uuid(), $1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at`,
+       RETURNING id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at, priority`,
       [
         validatedTask.projectId,
         validatedTask.name,
@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
         validatedTask.categoryId || null,
         validatedTask.deadline || null,
         validatedTask.endDate || null,
+        validatedTask.priority || null,
       ],
     )
     const task = insertResult.rows[0]
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: true, tasks })
     }
 
-    const query = `SELECT id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at FROM tasks WHERE project_id = $1 ORDER BY created_at ASC`
+    const query = `SELECT id, project_id, name, status, description, parent_task_id, category_id, deadline, end_date, created_at, updated_at, priority FROM tasks WHERE project_id = $1 ORDER BY created_at ASC`
     const result = await databaseConfig.query(query, [projectId])
     return NextResponse.json({ success: true, tasks: result.rows })
   } catch (error) {
@@ -126,6 +127,10 @@ export async function PATCH(request: NextRequest) {
     if (updateFields.endDate !== undefined) {
       fields.push(`end_date = $${idx++}`)
       values.push(updateFields.endDate)
+    }
+    if (updateFields.priority !== undefined) {
+      fields.push(`priority = $${idx++}`)
+      values.push(updateFields.priority)
     }
     if (!fields.length) {
       return NextResponse.json({ success: false, error: 'No fields to update' }, { status: 400 })

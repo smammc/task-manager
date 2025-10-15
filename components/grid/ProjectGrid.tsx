@@ -26,6 +26,7 @@ export function ProjectGrid({ project, deleteProject }: ProjectGridProps) {
     isUpdatingTaskStatus,
     updateTaskDueDate,
     isUpdatingTaskDueDate,
+    timeSpentMap,
   } = useTasks(project.id)
 
   const handleEditTask = async (taskId: string, newName: string) => {
@@ -59,7 +60,8 @@ export function ProjectGrid({ project, deleteProject }: ProjectGridProps) {
       onTaskStatusChange={(taskId: string, newStatus: string) =>
         updateTaskStatus(taskId, newStatus)
       }
-      onTaskDueDateChange={(updateTaskDueDate)}
+      onTaskDueDateChange={updateTaskDueDate}
+      timeSpentMap={timeSpentMap}
     />
   )
 }

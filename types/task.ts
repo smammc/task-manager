@@ -14,6 +14,7 @@ export const TaskSchema = z.object({
   completedCount: z.number().optional(),
   deadline: z.string().nullable().optional(),
   endDate: z.string().nullable().optional(),
+  priority: z.enum(['Low', 'Medium', 'High', 'Critical']).nullable().optional(),
 })
 
 export type Task = z.infer<typeof TaskSchema>
